@@ -1,0 +1,22 @@
+{
+  "workbenchTitle": "Що ви хочете просунути сьогодні?",
+  "workbenchSubtitle": "Зберіть ідеї, матеріали та співпрацю з ШІ в одному місці. Почніть із наступного кроку.",
+  "workbenchExplore": "Швидкий доступ",
+  "promptExamplesHint": "Спробуйте ці інструкції",
+  "defaultPrompts": {
+    "understand": "Ознайомся з цим проєктом і поясни простими словами, що він робить і з чого почати",
+    "cleanup": "Знайди в цій папці дублікати та непотрібні файли й покажи список для мого підтвердження",
+    "create": "Зроби мені гарну персональну домашню сторінку й відкрий її, коли завершиш"
+  },
+  "selectAssistantHint": "Виберіть асистента, щоб розпочати завдання",
+  "workspace": {
+    "workInProject": "Працювати в проєкті",
+    "optional": "Необов'язково",
+    "clearWorkspace": "Очистити",
+    "specifyWorkspace": "Вибрати папку проєкту",
+    "searchPlaceholder": "Пошук проєктів…",
+    "noProject": "Без проєкту"
+  },
+  "botTeamTitle": "Your Bot team",
+  "botTeamHint": "Choose a teammate, then enter a task above"
+}
