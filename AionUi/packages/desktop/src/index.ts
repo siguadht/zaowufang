@@ -124,6 +124,12 @@ if (!gotTheLock) {
 if (process.platform === 'darwin' || process.platform === 'linux') {
   fixPath();
 
+  // GUI-launched apps do not always inherit the user's local CLI directory.
+  const localBin = path.join(process.env.HOME || '', '.local', 'bin');
+  if (fs.existsSync(localBin) && !(process.env.PATH || '').split(path.delimiter).includes(localBin)) {
+    process.env.PATH = [localBin, process.env.PATH || ''].filter(Boolean).join(path.delimiter);
+  }
+
   // Supplement nvm paths that fix-path might miss (nvm is often only in .zshrc, not .zshenv)
   const nvmDir = process.env.NVM_DIR || path.join(process.env.HOME || '', '.nvm');
   const nvmVersionsDir = path.join(nvmDir, 'versions', 'node');

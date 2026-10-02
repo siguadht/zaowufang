@@ -15,8 +15,8 @@
       "custom_skill_names": [],
       "disabled_builtin_skills": [],
       "rule_file": "rules/xuzuo-product.{locale}.md",
-      "prompts": ["Turn my idea into a PRD with user stories and acceptance criteria", "Plan an MVP from this product idea"],
-      "prompts_i18n": { "zh-CN": ["把我的想法写成含用户故事和验收标准的 PRD", "帮我规划这个产品的 MVP"] },
+      "prompts": ["Turn my idea into a PRD with user stories and acceptance criteria", "Plan an MVP from this product idea", "Break this idea into a prioritized feature list"],
+      "prompts_i18n": { "zh-CN": ["把我的想法写成含用户故事和验收标准的 PRD", "帮我规划这个产品的 MVP", "把我的想法拆成有优先级的功能清单"] },
       "models": []
     },
     {
@@ -29,7 +29,7 @@
       "description_i18n": { "zh-CN": "在真实工作区实现已确认的需求，并验证改动。" },
       "avatar": "avatars/xuzuo-developer.png",
       "agent_ref": "aionrs",
-      "enabled_skills": ["zaowufang-build"],
+      "enabled_skills": ["zaowufang-build", "zaowufang-ui"],
       "custom_skill_names": [],
       "disabled_builtin_skills": [],
       "rule_file": "rules/xuzuo-developer.{locale}.md",
@@ -65,7 +65,7 @@
       "description_i18n": { "zh-CN": "研究、整理信息，交付可使用的办公成果。" },
       "avatar": "avatars/xuzuo-office.png",
       "agent_ref": "aionrs",
-      "enabled_skills": [],
+      "enabled_skills": ["officecli-pptx", "zaowufang-article"],
       "custom_skill_names": [],
       "disabled_builtin_skills": [],
       "rule_file": "rules/xuzuo-office.{locale}.md",

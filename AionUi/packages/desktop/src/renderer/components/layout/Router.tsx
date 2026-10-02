@@ -7,6 +7,7 @@ import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { TEAM_MODE_ENABLED } from '@/common/config/constants';
 const Conversation = React.lazy(() => import('@renderer/pages/conversation'));
 const Guid = React.lazy(() => import('@renderer/pages/guid'));
+const TaskHubPage = React.lazy(() => import('@renderer/pages/TaskHubPage'));
 const ModelBench = React.lazy(() => import('@renderer/pages/ModelBench'));
 const AgentSettings = React.lazy(() => import('@renderer/pages/settings/AgentSettings'));
 const AgentRepairPage = React.lazy(() => import('@renderer/pages/settings/AgentSettings/AgentRepairPage'));
@@ -75,6 +76,8 @@ const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
         <Route element={<ProtectedLayout layout={layout} />}>
           <Route index element={<Navigate to='/guid' replace />} />
           <Route path='/guid' element={withRouteFallback(Guid)} />
+          <Route path='/tasks' element={withRouteFallback(TaskHubPage)} />
+          <Route path='/deliverables' element={withRouteFallback(TaskHubPage)} />
           <Route path='/model-bench' element={withRouteFallback(ModelBench)} />
           <Route path='/conversation/:id' element={withRouteFallback(Conversation)} />
           <Route

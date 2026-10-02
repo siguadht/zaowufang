@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { Button, Tooltip } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
-import { Experiment, DashboardOne } from '@icon-park/react';
+import { Experiment, DashboardOne, FolderClose, ListCheckbox } from '@icon-park/react';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { usePreviewContext } from '@renderer/pages/conversation/Preview/context/PreviewContext';
@@ -214,6 +214,32 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
             >
               {!collapsed && t('guid.sidebarWorkbench')}
             </Button>
+            <Button
+              type={pathname === '/tasks' ? 'secondary' : 'text'}
+              className={siderStyles.workbenchEntry}
+              icon={<ListCheckbox size={18} />}
+              onClick={() => {
+                closePreview();
+                setIsBatchMode(false);
+                void navigate('/tasks');
+                onSessionClick?.();
+              }}
+            >
+              {!collapsed && t('guid.sidebarTaskList')}
+            </Button>
+            <Button
+              type={pathname === '/deliverables' ? 'secondary' : 'text'}
+              className={siderStyles.workbenchEntry}
+              icon={<FolderClose size={18} />}
+              onClick={() => {
+                closePreview();
+                setIsBatchMode(false);
+                void navigate('/deliverables');
+                onSessionClick?.();
+              }}
+            >
+              {!collapsed && t('guid.sidebarDeliverables')}
+            </Button>
             {botAssistants.length > 0 && (
               <div className={siderStyles.botTeamNav}>
                 {!collapsed && <div className={siderStyles.botTeamHeading}>{t('guid.botTeamTitle')}</div>}
@@ -296,6 +322,7 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
             />
             {/* Scrollable content: pinned → team (slot) → projects → conversations */}
             <div className={classNames('flex-1 min-h-0 overflow-y-auto', siderStyles.scrollArea)}>
+              {!collapsed && <div className={siderStyles.recentTasksHeading}>{t('guid.sidebarRecentTasks')}</div>}
               <Suspense fallback={<div className='min-h-200px' />}>
                 <WorkspaceGroupedHistory
                   {...workspaceHistoryProps}

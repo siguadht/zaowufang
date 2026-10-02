@@ -101,7 +101,9 @@
   color: var(--text-primary) !important;
   text-align: left !important;
   white-space: normal !important;
-  transition: border-color 0.16s ease, transform 0.16s ease !important;
+  transition:
+    border-color 0.16s ease,
+    transform 0.16s ease !important;
 }
 
 .botCard:hover {
@@ -155,8 +157,12 @@
 }
 
 @media (max-width: 690px) {
-  .botGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .botSectionHint { display: none; }
+  .botGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .botSectionHint {
+    display: none;
+  }
 }
 
 .promptSection {
@@ -165,7 +171,7 @@
 
 .promptGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 10px;
 }
 

@@ -511,7 +511,10 @@ describe('GuidPage', () => {
     });
 
     expect(promptButton).toHaveTextContent('Create a three-page financial dashboard with profit');
-    expect(promptButton).toHaveAttribute('aria-label', expect.stringContaining('Create a three-page financial dashboard'));
+    expect(promptButton).toHaveAttribute(
+      'aria-label',
+      expect.stringContaining('Create a three-page financial dashboard')
+    );
   });
 
   it('falls back to default instruction prompts when the selected assistant has no recommendations', () => {

@@ -30,6 +30,8 @@ If `officecli` is missing:
 
 Verify with `officecli --version` (open a new terminal if PATH hasn't picked up). If install fails, download a binary from https://github.com/iOfficeAI/OfficeCLI/releases.
 
+When the agent runner starts a fresh shell for each command, set `OFFICECLI_RESIDENT_FLUSH=each` on commands that edit a deck. Otherwise a resident process can end before its in-memory edits reach the PPTX file. Reopen the file with `officecli view <file> outline` to verify the saved slide count.
+
 ## ⚠️ Help-First Rule
 
 **This skill teaches what good slides look like, not every command flag. When a property name, enum value, or alias is uncertain, consult help BEFORE guessing.**
