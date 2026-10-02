@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { Button, Tooltip } from '@arco-design/web-react';
+import { Button } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
 import { Experiment, DashboardOne, FolderClose, ListCheckbox } from '@icon-park/react';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
@@ -17,6 +17,7 @@ import siderStyles from './Sider.module.css';
 import { useAssistantList } from '@/renderer/hooks/assistant/useAssistantList';
 import { resolveAssistantAvatar } from '@/renderer/utils/model/assistantAvatar';
 import ThemedLogo from '@/renderer/components/agent/ThemedLogo';
+import { useConversationHistoryContext } from '@/renderer/hooks/context/ConversationHistoryContext';
 
 const WorkspaceGroupedHistory = React.lazy(() => import('@renderer/pages/conversation/GroupedHistory'));
 const SettingsSider = React.lazy(() => import('@renderer/pages/settings/components/SettingsSider'));
@@ -38,6 +39,7 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
   const { logout, status } = useAuth();
   const { theme, setTheme } = useThemeContext();
   const { assistants, localeKey } = useAssistantList();
+  const { conversations } = useConversationHistoryContext();
   const botIds = ['xuzuo-product', 'xuzuo-developer', 'xuzuo-qa', 'xuzuo-office'];
   const botAssistants = botIds
     .map((id) => assistants.find((assistant) => assistant.id === id && assistant.enabled !== false))
@@ -195,11 +197,9 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
           <div className='size-full flex flex-col gap-2px'>
             <SiderToolbar
               isMobile={isMobile}
-              isBatchMode={isBatchMode}
               collapsed={collapsed}
               siderTooltipProps={siderTooltipProps}
               onNewChat={handleNewChat}
-              onToggleBatchMode={() => setIsBatchMode((prev) => !prev)}
             />
             <Button
               type={pathname === '/guid' ? 'secondary' : 'text'}
@@ -288,24 +288,23 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
               onClick={handleAssistantClick}
             />
             {/* Scheduled tasks nav entry - fixed above scroll */}
-            <Tooltip content={t('common.modelBench.title')} position='right'>
-              <Button
-                type={pathname === '/model-bench' ? 'secondary' : 'text'}
-                className='w-full min-h-34px text-t-primary'
-                aria-label={t('common.modelBench.title')}
-                icon={<Experiment size={18} />}
-                onClick={() => {
-                  cleanupSiderTooltips();
-                  blurActiveElement();
-                  closePreview();
-                  setIsBatchMode(false);
-                  void navigate('/model-bench');
-                  onSessionClick?.();
-                }}
-              >
-                {!collapsed && t('common.modelBench.title')}
-              </Button>
-            </Tooltip>
+            <Button
+              type={pathname === '/model-bench' ? 'secondary' : 'text'}
+              className={siderStyles.workbenchEntry}
+              aria-label={t('common.modelBench.title')}
+              title={t('common.modelBench.title')}
+              icon={<Experiment size={18} />}
+              onClick={() => {
+                cleanupSiderTooltips();
+                blurActiveElement();
+                closePreview();
+                setIsBatchMode(false);
+                void navigate('/model-bench');
+                onSessionClick?.();
+              }}
+            >
+              {!collapsed && t('common.modelBench.title')}
+            </Button>
             <SiderScheduledEntry
               isMobile={isMobile}
               isActive={pathname === '/scheduled'}
@@ -320,23 +319,30 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
                 collapsed ? 'mx-6px' : 'mx-10px'
               )}
             />
-            {/* Scrollable content: pinned → team (slot) → projects → conversations */}
+            {/* Collaboration teams stay separate from the recent conversation history. */}
             <div className={classNames('flex-1 min-h-0 overflow-y-auto', siderStyles.scrollArea)}>
-              {!collapsed && <div className={siderStyles.recentTasksHeading}>{t('guid.sidebarRecentTasks')}</div>}
+              <TeamSiderSection
+                collapsed={collapsed}
+                pathname={pathname}
+                siderTooltipProps={siderTooltipProps}
+                onSessionClick={onSessionClick}
+              />
+              {!collapsed && (
+                <div className={siderStyles.recentTasksHeading}>
+                  <span>{t('guid.sidebarRecentTasks')}</span>
+                  {conversations.length > 0 && (
+                    <button
+                      type='button'
+                      className={siderStyles.batchManageButton}
+                      onClick={() => setIsBatchMode((prev) => !prev)}
+                    >
+                      {t(isBatchMode ? 'conversation.history.batchModeExit' : 'conversation.history.batchManage')}
+                    </button>
+                  )}
+                </div>
+              )}
               <Suspense fallback={<div className='min-h-200px' />}>
-                <WorkspaceGroupedHistory
-                  {...workspaceHistoryProps}
-                  afterPinnedContent={
-                    <>
-                      <TeamSiderSection
-                        collapsed={collapsed}
-                        pathname={pathname}
-                        siderTooltipProps={siderTooltipProps}
-                        onSessionClick={onSessionClick}
-                      />
-                    </>
-                  }
-                />
+                <WorkspaceGroupedHistory {...workspaceHistoryProps} />
               </Suspense>
             </div>
           </div>

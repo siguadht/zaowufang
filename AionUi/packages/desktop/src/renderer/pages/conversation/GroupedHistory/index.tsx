@@ -254,19 +254,8 @@ const WorkspaceGroupedHistory: React.FC<WorkspaceGroupedHistoryProps> = ({
     return (
       <>
         {afterPinnedContent}
-        <div className='px-12px py-20px flex flex-col items-start gap-8px'>
+        <div className='px-12px py-16px flex flex-col items-start'>
           <span className='text-12px text-t-tertiary'>{t('conversation.history.noHistory')}</span>
-          <Button
-            type='text'
-            size='small'
-            className='!px-0'
-            onClick={() => {
-              void navigate('/guid', { state: { resetAssistant: true } });
-              onSessionClick?.();
-            }}
-          >
-            {t('guid.sidebarNewTask')}
-          </Button>
         </div>
       </>
     );

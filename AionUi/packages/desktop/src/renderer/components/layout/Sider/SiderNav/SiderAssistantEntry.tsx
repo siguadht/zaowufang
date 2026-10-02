@@ -54,13 +54,13 @@ const SiderAssistantEntry: React.FC<SiderAssistantEntryProps> = ({
     <Tooltip {...siderTooltipProps} content={t('settings.assistants')} position='right'>
       <div
         className={classNames(
-          'box-border group h-34px w-full flex items-center justify-start gap-8px ps-10px pe-8px rd-0.5rem cursor-pointer shrink-0 transition-all text-t-primary',
+          'box-border group h-38px w-full flex items-center justify-start gap-8px ps-12px pe-8px rd-0.5rem cursor-pointer shrink-0 transition-all text-t-primary',
           isMobile && 'sider-action-btn-mobile',
           isActive ? 'bg-fill-3' : 'hover:bg-fill-3 active:bg-fill-4'
         )}
         onClick={onClick}
       >
-        <span className='size-22px flex items-center justify-center shrink-0 text-t-primary'>
+        <span className='size-25px flex items-center justify-center shrink-0 text-t-primary'>
           <Ghost
             theme='outline'
             size='16'
