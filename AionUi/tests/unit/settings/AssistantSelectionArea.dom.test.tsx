@@ -119,7 +119,7 @@ describe('AssistantSelectionArea', () => {
       </ConfigProvider>
     );
 
-    expect(screen.getByText('序作助手')).toBeInTheDocument();
+    expect(screen.getByText('造物坊助手')).toBeInTheDocument();
     expect(screen.getByTestId('preset-pill-aionui-assistant')).toHaveAttribute('data-assistant-id', 'aionui-assistant');
   });
 

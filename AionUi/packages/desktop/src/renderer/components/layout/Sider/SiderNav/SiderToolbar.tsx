@@ -67,17 +67,17 @@ const SiderToolbar: React.FC<SiderToolbarProps> = ({
           )}
           onClick={onNewChat}
         >
-          <span className='size-22px flex items-center justify-center shrink-0'>
-            <Plus
-              theme='outline'
-              size='14'
-              fill='currentColor'
-              className={classNames('block leading-none', styles.newChatIcon)}
-              style={{ lineHeight: 0 }}
-            />
-          </span>
-          <span className='collapsed-hidden text-14px font-[600] leading-24px'>
-            {t('conversation.welcome.newConversation')}
+          <span className={styles.newTaskContent}>
+            <span className={styles.newTaskIcon}>
+              <Plus
+                theme='outline'
+                size='14'
+                fill='currentColor'
+                className={classNames('block leading-none', styles.newChatIcon)}
+                style={{ lineHeight: 0 }}
+              />
+            </span>
+            <span className='collapsed-hidden'>{t('conversation.welcome.newConversation')}</span>
           </span>
         </Button>
       </Tooltip>

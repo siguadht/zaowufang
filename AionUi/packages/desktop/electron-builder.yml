@@ -1,6 +1,6 @@
 appId: com.xuzuo.desktop
-productName: 序作
-executableName: Xuzuo
+productName: 造物坊
+executableName: Granto
 copyright: Copyright © 2024 AionUi
 
 protocols:
@@ -177,7 +177,7 @@ linux:
   description: ${description}
   desktop:
     entry:
-      Name: 序作
+      Name: 造物坊
       Comment: ${description}
       Icon: AionUi
       Categories: Office;Utility;

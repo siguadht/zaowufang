@@ -5,13 +5,13 @@
  */
 
 /** The customer-facing name shown throughout the desktop app and WebUI. */
-export const APP_DISPLAY_NAME = '序作';
+export const APP_DISPLAY_NAME = '造物坊';
 
 /** Compact mark used where the full product name does not fit. */
-export const APP_MONOGRAM = '序';
+export const APP_MONOGRAM = '造';
 
 /** Display name for the built-in assistant while retaining its compatibility id. */
-export const BUTLER_DISPLAY_NAME = '序作助手';
+export const BUTLER_DISPLAY_NAME = '造物坊助手';
 
 /** Custom builds must not replace themselves with an upstream release. */
 export const UPSTREAM_UPDATE_ENABLED = false;

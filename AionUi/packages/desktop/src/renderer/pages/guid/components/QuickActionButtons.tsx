@@ -111,7 +111,7 @@ const QuickActionButtons: React.FC<QuickActionButtonsProps> = ({
 
   return (
     <div
-      className={`absolute left-50% -translate-x-1/2 flex flex-col justify-center items-center ${styles.guidQuickActions}`}
+      className={`flex flex-col justify-center items-center ${styles.guidQuickActions}`}
     >
       <div className='flex justify-center items-center gap-24px'>
         <div

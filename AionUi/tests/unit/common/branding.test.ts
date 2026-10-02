@@ -14,9 +14,10 @@ import {
   replaceUpstreamBrand,
 } from '@/common/branding';
 
-describe('Xuzuo branding', () => {
-  it('uses the Xuzuo monogram for compact brand surfaces', () => {
-    expect(APP_MONOGRAM).toBe('序');
+describe('Granto branding', () => {
+  it('uses the 造物坊 name and monogram', () => {
+    expect(APP_DISPLAY_NAME).toBe('造物坊');
+    expect(APP_MONOGRAM).toBe('造');
   });
 
   it('does not let the custom build install upstream releases', () => {
@@ -29,7 +30,7 @@ describe('Xuzuo branding', () => {
     );
   });
 
-  it('uses the Xuzuo name for the built-in butler', () => {
+  it('uses the 造物坊 name for the built-in butler', () => {
     expect(replaceUpstreamBrand('AionUi管家 / AionUI Butler')).toBe(`${BUTLER_DISPLAY_NAME} / ${BUTLER_DISPLAY_NAME}`);
   });
 

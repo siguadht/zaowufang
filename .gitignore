@@ -12,3 +12,4 @@ AionUi/resources/bundled-aioncore/
 AionUi/resources/hub/
 *.dmg
 *.zip
+*.iconset/

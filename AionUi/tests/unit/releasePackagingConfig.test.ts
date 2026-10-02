@@ -22,11 +22,11 @@ function yamlBlock(content: string, key: string): string {
 }
 
 describe('release packaging configuration', () => {
-  it('uses the custom display name while preserving the executable compatibility name', () => {
+  it('uses the selected product name and executable name', () => {
     const config = readProjectFile('packages/desktop/electron-builder.yml');
 
-    expect(config).toContain('productName: 序作');
-    expect(config).toContain('executableName: AionUi');
+    expect(config).toContain('productName: 造物坊');
+    expect(config).toContain('executableName: Granto');
   });
 
   it('keeps mac zip artifacts enabled', () => {

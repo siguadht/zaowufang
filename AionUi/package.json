@@ -1,7 +1,7 @@
 {
   "name": "AionUi",
   "version": "2.2.2",
-  "description": "序作：从想法到交付的 AI 工作台。",
+  "description": "造物坊：从想法到交付的 AI 产品工厂。",
   "keywords": [],
   "license": "Apache-2.0",
   "author": {
@@ -268,5 +268,5 @@
   "patchedDependencies": {
     "7zip-bin@5.2.0": "patches/7zip-bin@5.2.0.patch"
   },
-  "productName": "序作"
+  "productName": "造物坊"
 }

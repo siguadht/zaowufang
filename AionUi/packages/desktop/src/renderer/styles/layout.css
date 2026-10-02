@@ -38,33 +38,23 @@
   border-inline-end: 1px solid var(--border-base);
 }
 
-.xuzuo-brand-mark {
-  background: var(--brand);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--brand) 14%, transparent);
+.granto-brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid var(--border-base);
 }
 
-[data-theme='dark'] .xuzuo-brand-mark {
-  background: var(--aou-1);
+[data-theme='dark'] .granto-brand-mark {
+  background: #ffffff;
 }
 
-.xuzuo-brand-mark .brand-monogram {
-  font-size: 0;
+.granto-brand-symbol {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
 }
-
-.xuzuo-brand-mark .brand-monogram::before,
-.xuzuo-brand-mark .brand-monogram::after {
-  content: '';
-  position: absolute;
-  top: 25%;
-  width: 13%;
-  height: 50%;
-  border-radius: 2px;
-  background: var(--inverse);
-  transform: rotate(36deg);
-}
-
-.xuzuo-brand-mark .brand-monogram::before { left: 38%; }
-.xuzuo-brand-mark .brand-monogram::after { left: 57%; }
 
 .layout-sider-header {
   border-bottom: 1px solid var(--border-base);

@@ -5,7 +5,8 @@
  */
 
 import { ipcBridge } from '@/common';
-import { APP_DISPLAY_NAME, APP_MONOGRAM } from '@/common/branding';
+import { APP_DISPLAY_NAME } from '@/common/branding';
+import grantoMark from '@/renderer/assets/logos/brand/granto.svg';
 import { TEAM_MODE_ENABLED } from '@/common/config/constants';
 import PwaPullToRefresh from '@/renderer/components/layout/PwaPullToRefresh';
 import Titlebar from '@/renderer/components/layout/Titlebar';
@@ -400,20 +401,12 @@ const Layout: React.FC<{
                 )}
               >
                 <div
-                  className={classNames('xuzuo-brand-mark shrink-0 size-32px relative rd-0.5rem', {
+                  className={classNames('granto-brand-mark shrink-0 size-32px relative rd-0.5rem', {
                     '!size-24px': collapsed,
                   })}
                   onClick={onClick}
                 >
-                  <span
-                    className={classNames(
-                      'brand-monogram absolute inset-0 flex items-center justify-center text-white font-bold leading-none select-none',
-                      collapsed ? 'text-14px' : 'text-18px'
-                    )}
-                    aria-hidden='true'
-                  >
-                    {APP_MONOGRAM}
-                  </span>
+                  <img src={grantoMark} alt='' className='granto-brand-symbol' aria-hidden='true' />
                 </div>
                 {isSettingsRoute ? (
                   <Tooltip content={t('common.back', { defaultValue: 'Back to Chat' })} position='bottom'>

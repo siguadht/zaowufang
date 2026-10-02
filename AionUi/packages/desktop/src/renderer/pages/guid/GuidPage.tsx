@@ -736,12 +736,14 @@ const GuidPage: React.FC = () => {
                       aria-pressed={selected}
                       onClick={() => handleSelectAssistant(assistant.id)}
                     >
-                      <span className={styles.botAvatar}>
-                        {avatar.kind === 'image' ? <ThemedLogo src={avatar.value} alt='' /> : null}
-                      </span>
-                      <span className={styles.botName}>{assistant.name_i18n?.[localeKey] || assistant.name}</span>
-                      <span className={styles.botDescription}>
-                        {assistant.description_i18n?.[localeKey] || assistant.description}
+                      <span className={styles.botCardContent}>
+                        <span className={styles.botAvatar}>
+                          {avatar.kind === 'image' ? <ThemedLogo src={avatar.value} alt='' /> : null}
+                        </span>
+                        <span className={styles.botName}>{assistant.name_i18n?.[localeKey] || assistant.name}</span>
+                        <span className={styles.botDescription}>
+                          {assistant.description_i18n?.[localeKey] || assistant.description}
+                        </span>
                       </span>
                     </Button>
                   );
@@ -767,11 +769,13 @@ const GuidPage: React.FC = () => {
                       guidInput.handleTextareaFocus();
                     }}
                   >
-                    <span className={styles.promptIndex} aria-hidden='true'>
-                      {String(index + 1).padStart(2, '0')}
+                    <span className={styles.promptButtonContent}>
+                      <span className={styles.promptIndex} aria-hidden='true'>
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className={styles.promptText}>{prompt}</span>
+                      <ArrowRightUp theme='outline' size='15' className={styles.promptArrow} />
                     </span>
-                    <span className={styles.promptText}>{prompt}</span>
-                    <ArrowRightUp theme='outline' size='15' className={styles.promptArrow} />
                   </Button>
                 ))}
               </div>
@@ -798,14 +802,13 @@ const GuidPage: React.FC = () => {
               </Button>
             </div>
           </div>
+          <QuickActionButtons
+            onOpenLink={openLink}
+            onOpenBugReport={() => setShowFeedbackModal(true)}
+            inactiveBorderColor={inactiveBorderColor}
+            activeShadow={activeShadow}
+          />
         </div>
-
-        <QuickActionButtons
-          onOpenLink={openLink}
-          onOpenBugReport={() => setShowFeedbackModal(true)}
-          inactiveBorderColor={inactiveBorderColor}
-          activeShadow={activeShadow}
-        />
         <FeedbackReportModal visible={showFeedbackModal} onCancel={() => setShowFeedbackModal(false)} />
       </div>
     </ConfigProvider>

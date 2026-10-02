@@ -1,13 +1,13 @@
 {
-  "name": "序作",
-  "short_name": "序作",
-  "description": "序作：从想法到交付的 AI 工作台。",
+  "name": "造物坊",
+  "short_name": "造物坊",
+  "description": "造物坊：从想法到交付的 AI 产品工厂。",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#19523d",
+  "theme_color": "#1E293B",
   "icons": [
     {
       "src": "./pwa/icon-192.png",

@@ -108,11 +108,16 @@
 }
 
 .botCard :global(.arco-btn-content) {
+  display: block;
+  width: 100%;
+}
+
+.botCardContent {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   width: 100%;
-  gap: 8px;
+  gap: 7px;
 }
 
 .botAvatar {
@@ -128,14 +133,18 @@
 }
 
 .botName {
+  display: block;
   font-size: 14px;
   font-weight: 700;
+  line-height: 1.35;
 }
 
 .botDescription {
+  display: block;
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.5;
+  text-align: left;
 }
 
 @media (max-width: 690px) {
@@ -176,6 +185,12 @@
 }
 
 .promptButton :global(.arco-btn-content) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.promptButtonContent {
   display: flex;
   align-items: flex-start;
   flex-direction: column;
@@ -721,9 +736,9 @@
   color: var(--aou-9) !important;
 }
 
-/* 底部快捷按钮：基础间距 + 安全区 */
 .guidQuickActions {
-  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  margin-top: 30px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @media (max-width: 768px) {
@@ -750,7 +765,7 @@
     min-height: 78px;
   }
 
-  .promptButton :global(.arco-btn-content) {
+  .promptButtonContent {
     flex-direction: row;
     align-items: center;
   }
