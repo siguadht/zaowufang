@@ -36,5 +36,10 @@
     "create": "Créame una página personal bonita y ábrela cuando esté lista"
   },
   "botTeamTitle": "Your Bot team",
+  "sidebarNewTask": "New task",
+  "sidebarWorkbench": "Workbench",
+  "sidebarTools": "Tools",
+  "showOtherAssistants": "Other assistants",
+  "hideOtherAssistants": "Hide other assistants",
   "botTeamHint": "Choose a teammate, then enter a task above"
 }

@@ -34,12 +34,12 @@ const SiderToolbar: React.FC<SiderToolbarProps> = ({
   if (collapsed) {
     return (
       <div className='shrink-0 flex flex-col items-center gap-2px w-full'>
-        <Tooltip {...siderTooltipProps} content={t('conversation.welcome.newConversation')} position='right'>
+        <Tooltip {...siderTooltipProps} content={t('guid.sidebarNewTask')} position='right'>
           <Button
             type='primary'
             className={classNames('w-full h-38px', styles.newChatTrigger, styles.newTaskButton)}
             onClick={onNewChat}
-            aria-label={t('conversation.welcome.newConversation')}
+            aria-label={t('guid.sidebarNewTask')}
           >
             <Plus
               theme='outline'
@@ -56,7 +56,7 @@ const SiderToolbar: React.FC<SiderToolbarProps> = ({
 
   return (
     <div className='shrink-0 flex items-center gap-8px'>
-      <Tooltip {...siderTooltipProps} content={t('conversation.welcome.newConversation')} position='right'>
+      <Tooltip {...siderTooltipProps} content={t('guid.sidebarNewTask')} position='right'>
         <Button
           type='primary'
           className={classNames(
@@ -77,7 +77,7 @@ const SiderToolbar: React.FC<SiderToolbarProps> = ({
                 style={{ lineHeight: 0 }}
               />
             </span>
-            <span className='collapsed-hidden'>{t('conversation.welcome.newConversation')}</span>
+            <span className='collapsed-hidden'>{t('guid.sidebarNewTask')}</span>
           </span>
         </Button>
       </Tooltip>

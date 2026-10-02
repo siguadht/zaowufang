@@ -11,7 +11,7 @@ import { useCronJobsMap } from '@/renderer/pages/cron';
 import { restrictToVerticalAxis } from '@/renderer/utils/ui/dndModifiers';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Button, Dropdown, Empty, Input, Menu, Modal, Tooltip } from '@arco-design/web-react';
+import { Button, Dropdown, Input, Menu, Modal, Tooltip } from '@arco-design/web-react';
 import { FolderClose, MoreOne, Plus, Right } from '@icon-park/react';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useMemo } from 'react';
@@ -254,8 +254,19 @@ const WorkspaceGroupedHistory: React.FC<WorkspaceGroupedHistoryProps> = ({
     return (
       <>
         {afterPinnedContent}
-        <div className='py-48px flex-center'>
-          <Empty description={t('conversation.history.noHistory')} />
+        <div className='px-12px py-20px flex flex-col items-start gap-8px'>
+          <span className='text-12px text-t-tertiary'>{t('conversation.history.noHistory')}</span>
+          <Button
+            type='text'
+            size='small'
+            className='!px-0'
+            onClick={() => {
+              void navigate('/guid', { state: { resetAssistant: true } });
+              onSessionClick?.();
+            }}
+          >
+            {t('guid.sidebarNewTask')}
+          </Button>
         </div>
       </>
     );

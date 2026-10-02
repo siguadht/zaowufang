@@ -18,5 +18,10 @@
     "noProject": "不使用專案"
   },
   "botTeamTitle": "Your Bot team",
+  "sidebarNewTask": "建立任務",
+  "sidebarWorkbench": "工作台",
+  "sidebarTools": "工具",
+  "showOtherAssistants": "更多助手",
+  "hideOtherAssistants": "收起其他助手",
   "botTeamHint": "Choose a teammate, then enter a task above"
 }

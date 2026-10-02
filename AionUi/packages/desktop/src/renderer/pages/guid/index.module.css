@@ -61,6 +61,13 @@
   margin-top: 27px;
 }
 
+.otherAssistantsButton {
+  display: block !important;
+  margin: 14px auto 0 !important;
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+}
+
 .botSectionHeading {
   display: flex;
   align-items: baseline;
@@ -276,14 +283,14 @@
 .guidInputCardWrap {
   width: 100%;
   box-sizing: border-box;
-  background: var(--bg-1);
+  background: transparent;
+  overflow: visible !important;
 }
 
 .guidInputInner {
   background: var(--bg-base, #fff);
-  border: 1px solid var(--color-border-3);
-  border-radius: 18px;
-  box-shadow: 0 12px 36px color-mix(in srgb, var(--brand) 5%, transparent);
+  border: 1px solid var(--border-base);
+  border-radius: 20px;
   box-sizing: border-box;
 }
 

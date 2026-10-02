@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { Button, Tooltip } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
-import { Experiment } from '@icon-park/react';
+import { Experiment, DashboardOne } from '@icon-park/react';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { usePreviewContext } from '@renderer/pages/conversation/Preview/context/PreviewContext';
@@ -14,6 +14,9 @@ import { SiderToolbar, SiderSearchEntry, SiderScheduledEntry, SiderAssistantEntr
 import SiderFooter from './SiderFooter';
 import TeamSiderSection from './TeamSiderSection';
 import siderStyles from './Sider.module.css';
+import { useAssistantList } from '@/renderer/hooks/assistant/useAssistantList';
+import { resolveAssistantAvatar } from '@/renderer/utils/model/assistantAvatar';
+import ThemedLogo from '@/renderer/components/agent/ThemedLogo';
 
 const WorkspaceGroupedHistory = React.lazy(() => import('@renderer/pages/conversation/GroupedHistory'));
 const SettingsSider = React.lazy(() => import('@renderer/pages/settings/components/SettingsSider'));
@@ -34,6 +37,11 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
   const { closePreview, clearPreviewForScope } = usePreviewContext();
   const { logout, status } = useAuth();
   const { theme, setTheme } = useThemeContext();
+  const { assistants, localeKey } = useAssistantList();
+  const botIds = ['xuzuo-product', 'xuzuo-developer', 'xuzuo-qa', 'xuzuo-office'];
+  const botAssistants = botIds
+    .map((id) => assistants.find((assistant) => assistant.id === id && assistant.enabled !== false))
+    .filter((assistant): assistant is NonNullable<typeof assistant> => Boolean(assistant));
   const [isBatchMode, setIsBatchMode] = useState(false);
   const isSettings = pathname.startsWith('/settings');
   const lastNonSettingsPathRef = useRef('/guid');
@@ -193,6 +201,47 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
               onNewChat={handleNewChat}
               onToggleBatchMode={() => setIsBatchMode((prev) => !prev)}
             />
+            <Button
+              type={pathname === '/guid' ? 'secondary' : 'text'}
+              className={siderStyles.workbenchEntry}
+              icon={<DashboardOne size={18} />}
+              onClick={() => {
+                closePreview();
+                setIsBatchMode(false);
+                void navigate('/guid');
+                onSessionClick?.();
+              }}
+            >
+              {!collapsed && t('guid.sidebarWorkbench')}
+            </Button>
+            {botAssistants.length > 0 && (
+              <div className={siderStyles.botTeamNav}>
+                {!collapsed && <div className={siderStyles.botTeamHeading}>{t('guid.botTeamTitle')}</div>}
+                {botAssistants.map((assistant) => {
+                  const avatar = resolveAssistantAvatar(assistant.avatar);
+                  return (
+                    <Button
+                      key={assistant.id}
+                      type='text'
+                      className={siderStyles.botTeamEntry}
+                      aria-label={assistant.name_i18n?.[localeKey] || assistant.name}
+                      onClick={() => {
+                        closePreview();
+                        setIsBatchMode(false);
+                        void navigate('/guid', { state: { selectedAssistantId: assistant.id } });
+                        onSessionClick?.();
+                      }}
+                    >
+                      <span className={siderStyles.botTeamAvatar}>
+                        {avatar.kind === 'image' && <ThemedLogo src={avatar.value} alt='' />}
+                      </span>
+                      {!collapsed && <span>{assistant.name_i18n?.[localeKey] || assistant.name}</span>}
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
+            {!collapsed && <div className={siderStyles.toolsHeading}>{t('guid.sidebarTools')}</div>}
             {/* Search entry — desktop moves this into the titlebar toolbar;
                 mobile keeps it here in the sidebar. */}
             {isMobile && (

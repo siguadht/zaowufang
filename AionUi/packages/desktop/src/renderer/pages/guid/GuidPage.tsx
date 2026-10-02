@@ -15,7 +15,6 @@ import { APP_DISPLAY_NAME } from '@/common/branding';
 import { useInputFocusRing } from '@/renderer/hooks/chat/useInputFocusRing';
 import { appendPromptToDraft } from '@/renderer/hooks/chat/useSendBoxDraft';
 import { getFuzzyMatchIndices, useSlashCommandController } from '@/renderer/hooks/chat/useSlashCommandController';
-import { openExternalUrl } from '@/renderer/utils/platform';
 import SlashCommandMenu, { type SlashCommandMenuItem } from '@/renderer/components/chat/SlashCommandMenu';
 import AssistantSelectionArea from './components/AssistantSelectionArea';
 import ThemedLogo from '@/renderer/components/agent/ThemedLogo';
@@ -23,8 +22,6 @@ import { resolveAssistantAvatar } from '@/renderer/utils/model/assistantAvatar';
 import GuidActionRow from './components/GuidActionRow';
 import GuidInputCard from './components/GuidInputCard';
 import GuidModelSelector from './components/GuidModelSelector';
-import QuickActionButtons from './components/QuickActionButtons';
-import FeedbackReportModal from '@/renderer/components/settings/SettingsModal/contents/FeedbackReportModal';
 import { useGuidAssistantSelection } from './hooks/useGuidAssistantSelection';
 import { useGuidInput } from './hooks/useGuidInput';
 import { useGuidModelSelection } from './hooks/useGuidModelSelection';
@@ -64,16 +61,7 @@ const GuidPage: React.FC = () => {
   const { activeBorderColor, inactiveBorderColor, activeShadow } = useInputFocusRing();
 
   const localeKey = resolveLocaleKey(i18n.language);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-
-  // Open external link
-  const openLink = useCallback(async (url: string) => {
-    try {
-      await openExternalUrl(url);
-    } catch (error) {
-      console.error('Failed to open external link:', error);
-    }
-  }, []);
+  const [showOtherAssistants, setShowOtherAssistants] = useState(false);
 
   // --- Skills state ---
   // Skill metadata comes from the database-backed catalog. Built-in auto-inject
@@ -686,12 +674,14 @@ const GuidPage: React.FC = () => {
             <p className={styles.heroSubtitle}>{t('guid.workbenchSubtitle')}</p>
           </div>
 
-          <AssistantSelectionArea
-            selectedAssistantId={agentSelection.selectedAssistantId}
-            assistants={agentSelection.assistants}
-            localeKey={localeKey}
-            onSelectAssistant={handleSelectAssistant}
-          />
+          {showOtherAssistants || xuzuoBots.length === 0 ? (
+            <AssistantSelectionArea
+              selectedAssistantId={agentSelection.selectedAssistantId}
+              assistants={agentSelection.assistants}
+              localeKey={localeKey}
+              onSelectAssistant={handleSelectAssistant}
+            />
+          ) : null}
 
           <GuidInputCard
             focusRequestKey={navState?.focusPrefill && navState.prefillPrompt ? location.key : undefined}
@@ -751,6 +741,15 @@ const GuidPage: React.FC = () => {
               </div>
             </section>
           ) : null}
+          {xuzuoBots.length > 0 ? (
+            <Button
+              type='text'
+              className={styles.otherAssistantsButton}
+              onClick={() => setShowOtherAssistants((value) => !value)}
+            >
+              {showOtherAssistants ? t('guid.hideOtherAssistants') : t('guid.showOtherAssistants')}
+            </Button>
+          ) : null}
 
           {selectedAssistantPrompts.length > 0 ? (
             <div className={styles.promptSection}>
@@ -802,14 +801,7 @@ const GuidPage: React.FC = () => {
               </Button>
             </div>
           </div>
-          <QuickActionButtons
-            onOpenLink={openLink}
-            onOpenBugReport={() => setShowFeedbackModal(true)}
-            inactiveBorderColor={inactiveBorderColor}
-            activeShadow={activeShadow}
-          />
         </div>
-        <FeedbackReportModal visible={showFeedbackModal} onCancel={() => setShowFeedbackModal(false)} />
       </div>
     </ConfigProvider>
   );

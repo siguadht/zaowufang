@@ -18,5 +18,10 @@
     "noProject": "بدون پروژه"
   },
   "botTeamTitle": "Your Bot team",
+  "sidebarNewTask": "New task",
+  "sidebarWorkbench": "Workbench",
+  "sidebarTools": "Tools",
+  "showOtherAssistants": "Other assistants",
+  "hideOtherAssistants": "Hide other assistants",
   "botTeamHint": "Choose a teammate, then enter a task above"
 }

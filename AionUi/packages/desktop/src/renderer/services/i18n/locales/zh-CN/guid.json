@@ -18,5 +18,10 @@
     "noProject": "不使用项目"
   },
   "botTeamTitle": "你的 Bot 团队",
+  "sidebarNewTask": "新建任务",
+  "sidebarWorkbench": "工作台",
+  "sidebarTools": "工具",
+  "showOtherAssistants": "更多助手",
+  "hideOtherAssistants": "收起其他助手",
   "botTeamHint": "选一位搭档，再在上方输入任务"
 }
