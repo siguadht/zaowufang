@@ -34,6 +34,28 @@ export interface AiCopyRows {
 /** Pseudo timeline entries that neither end a turn nor carry copyable text. */
 const PSEUDO_TYPES = new Set(['file_summary', 'tool_summary', 'artifact']);
 
+/** Show the conversation assistant once at the first visible text of each AI turn. */
+export function collectAiAvatarTextIds(items: TurnCopyItem[]): Set<string> {
+  const ids = new Set<string>();
+  let hasAssistantText = false;
+
+  for (const item of items) {
+    if (item.type && PSEUDO_TYPES.has(item.type)) continue;
+    if (item.position === 'right') {
+      hasAssistantText = false;
+      continue;
+    }
+    if (item.type !== 'text' || item.position !== 'left') continue;
+
+    const content = item.content as { content?: unknown; teammateMessage?: boolean } | undefined;
+    if (content?.teammateMessage || typeof content?.content !== 'string' || !content.content.trim()) continue;
+    if (!hasAssistantText) ids.add(item.id);
+    hasAssistantText = true;
+  }
+
+  return ids;
+}
+
 /**
  * Group the visible timeline into AI turns. A turn runs until the next user
  * (right) message; tool/thinking/pseudo items neither end it nor contribute

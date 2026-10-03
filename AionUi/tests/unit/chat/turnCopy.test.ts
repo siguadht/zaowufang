@@ -5,12 +5,36 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { buildTurnClipboardText, collectAiCopyRows } from '@/renderer/utils/chat/turnCopy';
+import { buildTurnClipboardText, collectAiAvatarTextIds, collectAiCopyRows } from '@/renderer/utils/chat/turnCopy';
 
 const user = (id: string) => ({ id, type: 'text', position: 'right', content: { content: 'q' } });
 const aiText = (id: string, content: string) => ({ id, type: 'text', position: 'left', content: { content } });
 const tool = (id: string) => ({ id, type: 'tool_call', position: 'left', content: {} });
 const thinking = (id: string) => ({ id, type: 'thinking', position: 'left', content: { content: 'hmm' } });
+
+describe('collectAiAvatarTextIds', () => {
+  it('shows one assistant avatar per turn, including replies split by tools', () => {
+    const ids = collectAiAvatarTextIds([
+      user('u1'),
+      aiText('a1', 'first'),
+      tool('t1'),
+      aiText('a2', 'continued'),
+      user('u2'),
+      aiText('a3', 'next turn'),
+    ]);
+    expect([...ids]).toEqual(['a1', 'a3']);
+  });
+
+  it('skips empty and teammate text so the Bot avatar stays with its own reply', () => {
+    const ids = collectAiAvatarTextIds([
+      user('u1'),
+      aiText('empty', ' '),
+      { id: 'teammate', type: 'text', position: 'left', content: { content: 'hello', teammateMessage: true } },
+      aiText('bot', 'answer'),
+    ]);
+    expect([...ids]).toEqual(['bot']);
+  });
+});
 
 describe('collectAiCopyRows', () => {
   it('puts the row on a simple single-text turn and carries its text', () => {

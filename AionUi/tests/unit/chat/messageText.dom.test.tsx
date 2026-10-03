@@ -753,6 +753,39 @@ describe('MessageText delivery status badge', () => {
   });
 });
 
+describe('MessageText assistant avatar', () => {
+  const message: IMessageText = {
+    id: 'bot-reply',
+    msg_id: 'bot-reply',
+    conversation_id: 'conv-1',
+    type: 'text',
+    position: 'left',
+    content: { content: 'I can help with the PRD.' },
+  };
+  const assistantMark = { kind: 'image' as const, value: '/api/assistants/xuzuo-product/avatar', label: '产品 Bot' };
+
+  it('renders the selected Bot image beside its reply', () => {
+    render(<MessageText message={message} assistantMark={assistantMark} showAssistantAvatar />);
+    expect(screen.getByTestId('assistant-message-avatar')).toContainElement(screen.getByAltText('产品 Bot'));
+  });
+
+  it('does not add the Bot avatar to user or teammate messages', () => {
+    const { rerender } = render(
+      <MessageText message={{ ...message, position: 'right' }} assistantMark={assistantMark} showAssistantAvatar />
+    );
+    expect(screen.queryByTestId('assistant-message-avatar')).not.toBeInTheDocument();
+
+    rerender(
+      <MessageText
+        message={{ ...message, content: { ...message.content, teammateMessage: true, senderName: 'Reviewer' } }}
+        assistantMark={assistantMark}
+        showAssistantAvatar
+      />
+    );
+    expect(screen.queryByTestId('assistant-message-avatar')).not.toBeInTheDocument();
+  });
+});
+
 describe('MessageText fork entry point', () => {
   const forkMessage = (overrides: Partial<IMessageText> = {}): IMessageText => ({
     id: 'msg-fork-1',

@@ -7,11 +7,18 @@
 import type { IConversationArtifact } from '@/common/adapter/ipcBridge';
 import type { IMessageAcpToolCall, IMessageToolCall, IMessageToolGroup, TMessage } from '@/common/chat/chatLib';
 import { useConversationContextSafe } from '@/renderer/hooks/context/ConversationContext';
+import { usePresetAssistantInfo } from '@/renderer/hooks/agent/usePresetAssistantInfo';
+import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conversationCache';
+import {
+  resolveConversationLeadingMark,
+  type ConversationLeadingMark,
+} from '@/renderer/pages/conversation/utils/conversationAssistantIdentity';
+import { useAgentLogos } from '@/renderer/utils/model/agentLogo';
 import { useConversationRuntimeView } from '@/renderer/pages/conversation/runtime/useConversationRuntimeView';
 import { getChatSurfaceWidthClass } from '@/renderer/pages/conversation/utils/chatSurfaceWidth';
 import { iconColors } from '@/renderer/styles/colors';
 import { CHAT_MESSAGE_JUMP_EVENT, type ChatMessageJumpDetail } from '@/renderer/utils/chat/chatMinimapEvents';
-import { collectAiCopyRows, type TurnCopyItem } from '@/renderer/utils/chat/turnCopy';
+import { collectAiAvatarTextIds, collectAiCopyRows, type TurnCopyItem } from '@/renderer/utils/chat/turnCopy';
 import { Image } from '@arco-design/web-react';
 import { Down } from '@icon-park/react';
 import MessageAcpPermission from '@renderer/pages/conversation/Messages/acp/MessageAcpPermission';
@@ -23,6 +30,7 @@ import classNames from 'classnames';
 import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import useSWR from 'swr';
 import { uuid } from '@renderer/utils/common';
 import './messages.css';
 import HOC from '@renderer/utils/ui/HOC';
@@ -227,6 +235,8 @@ const MessageItem: React.FC<{
   isLastMessage?: boolean;
   hasForkAnchor?: boolean;
   turnTexts?: string[];
+  assistantMark?: ConversationLeadingMark | null;
+  showAssistantAvatar?: boolean;
 }> = React.memo(
   HOC((props) => {
     const { message, highlighted, rowWidthClass } = props as {
@@ -261,6 +271,8 @@ const MessageItem: React.FC<{
       isLastMessage,
       hasForkAnchor,
       turnTexts,
+      assistantMark,
+      showAssistantAvatar,
     }: {
       message: TMessage;
       highlighted?: boolean;
@@ -269,6 +281,8 @@ const MessageItem: React.FC<{
       isLastMessage?: boolean;
       hasForkAnchor?: boolean;
       turnTexts?: string[];
+      assistantMark?: ConversationLeadingMark | null;
+      showAssistantAvatar?: boolean;
     }) => {
       const { t } = useTranslation();
       switch (message.type) {
@@ -280,6 +294,8 @@ const MessageItem: React.FC<{
               isLastMessage={isLastMessage}
               hasForkAnchor={hasForkAnchor}
               turnTexts={turnTexts}
+              assistantMark={assistantMark}
+              showAssistantAvatar={showAssistantAvatar}
             ></MessageText>
           );
         case 'tips':
@@ -324,6 +340,8 @@ const MessageItem: React.FC<{
     prev.showCopyRow === next.showCopyRow &&
     prev.isLastMessage === next.isLastMessage &&
     prev.hasForkAnchor === next.hasForkAnchor &&
+    prev.assistantMark === next.assistantMark &&
+    prev.showAssistantAvatar === next.showAssistantAvatar &&
     // Compare by content: the map is rebuilt per render, so reference equality
     // would defeat the memo for the one row that carries the copy button.
     (prev.turnTexts === next.turnTexts ||
@@ -337,6 +355,16 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
   const pagination = useMessagePaginationState();
   const artifacts = useConversationArtifacts();
   const conversationContext = useConversationContextSafe();
+  const logos = useAgentLogos();
+  const { data: conversation } = useSWR(
+    conversationContext?.conversation_id ? ['single-conversation', conversationContext.conversation_id] : null,
+    () => getConversationOrNull(conversationContext!.conversation_id)
+  );
+  const { info: assistantInfo } = usePresetAssistantInfo(conversation ?? undefined);
+  const assistantMark = useMemo(
+    () => (conversation ? resolveConversationLeadingMark(conversation, assistantInfo ?? undefined, logos) : null),
+    [assistantInfo, conversation, logos]
+  );
   const rowWidthClass = getChatSurfaceWidthClass();
   const loadPreviousMessagePage = useLoadPreviousMessagePage(conversationContext?.conversation_id);
   const loadAnchorMessageWindow = useLoadAnchorMessageWindow(conversationContext?.conversation_id);
@@ -472,6 +500,7 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
     () => collectAiCopyRows(processedList as TurnCopyItem[], isProcessing),
     [processedList, isProcessing]
   );
+  const aiAvatarTextIds = useMemo(() => collectAiAvatarTextIds(processedList as TurnCopyItem[]), [processedList]);
 
   // The last REAL message in the visible timeline (pseudo entries like
   // file/tool summaries don't count). HEAD-fork backends (claude/ACP) only
@@ -721,6 +750,8 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
         isLastMessage={message.id === lastMessageId}
         hasForkAnchor={forkAnchoredIds.has(message.id)}
         turnTexts={aiTurnTextsById.get(message.id)}
+        assistantMark={assistantMark}
+        showAssistantAvatar={aiAvatarTextIds.has(message.id)}
       ></MessageItem>
     );
   };

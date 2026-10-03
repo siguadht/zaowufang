@@ -28,6 +28,9 @@ import { stripSkillSuggest, hasSkillSuggest } from '@renderer/utils/chat/skillSu
 import { isForkEnabled } from '@/common/chat/forkConversation';
 import { useForkConversation } from '@/renderer/hooks/chat/useForkConversation';
 import ForkBranchIcon from '@renderer/components/base/ForkBranchIcon';
+import ThemedLogo from '@/renderer/components/agent/ThemedLogo';
+import type { ConversationLeadingMark } from '@/renderer/pages/conversation/utils/conversationAssistantIdentity';
+import { Robot } from '@icon-park/react';
 
 /**
  * Format a timestamp for message display.
@@ -103,7 +106,17 @@ const MessageText: React.FC<{
   /** All text segments of this message's turn, in order — the copy button
    * copies the whole reply, not just the segment it happens to sit on. */
   turnTexts?: string[];
-}> = ({ message, showCopyRow = true, isLastMessage = false, hasForkAnchor = false, turnTexts }) => {
+  assistantMark?: ConversationLeadingMark | null;
+  showAssistantAvatar?: boolean;
+}> = ({
+  message,
+  showCopyRow = true,
+  isLastMessage = false,
+  hasForkAnchor = false,
+  turnTexts,
+  assistantMark,
+  showAssistantAvatar = false,
+}) => {
   const logos = useAgentLogos();
   // Filter think tags from content before rendering
   // 在渲染前过滤 think 标签
@@ -131,6 +144,7 @@ const MessageText: React.FC<{
   // yet" — an IM delivered/read style badge, never a ghost/dashed bubble.
   const isPendingDelivery = isUserMessage && message.status === 'pending';
   const isTeammateMessage = message.position === 'left' && message.content.teammateMessage === true;
+  const isAssistantMessage = message.position === 'left' && !isTeammateMessage;
   const senderName = message.content.senderName;
   const senderAgentType = message.content.senderAgentType;
   const senderConversationId = message.content.senderConversationId;
@@ -235,7 +249,31 @@ const MessageText: React.FC<{
 
   return (
     <>
-      <div className={classNames('min-w-0 flex flex-col group', isUserMessage ? 'items-end' : 'items-start')}>
+      <div
+        className={classNames('min-w-0 flex flex-col group relative', isUserMessage ? 'items-end' : 'items-start', {
+          'pl-40px': isAssistantMessage && assistantMark,
+        })}
+      >
+        {isAssistantMessage && showAssistantAvatar && assistantMark && (
+          <span
+            className='absolute left-0 top-0 w-32px h-32px flex items-center justify-center rounded-8px bg-fill-2'
+            data-testid='assistant-message-avatar'
+          >
+            {assistantMark.kind === 'image' ? (
+              <ThemedLogo
+                src={assistantMark.value}
+                alt={assistantMark.label}
+                className='w-32px h-32px object-contain'
+              />
+            ) : assistantMark.kind === 'emoji' ? (
+              <span role='img' aria-label={assistantMark.label} className='text-22px leading-none'>
+                {assistantMark.value}
+              </span>
+            ) : (
+              <Robot theme='outline' size={18} aria-label={assistantMark.label} />
+            )}
+          </span>
+        )}
         {cronMeta && <MessageCronBadge meta={cronMeta} />}
         {isTeammateMessage && displaySenderName && (
           <div className='flex items-center gap-6px mb-4px'>
