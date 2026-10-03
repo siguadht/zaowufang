@@ -1,37 +1,42 @@
-# 造物坊 Granto
+# 造物坊 · Granto
 
-**从想法到交付的 AI 工作台。** 这是基于[产品经理工作台](https://github.com/Zhouchengjian-user/product-manager-workbench)改造的 macOS 桌面产品，沿用 AionUi / AionCore 的模型、工具、会话和工作区能力。
+[简体中文](README.md) · [English](README.en.md)
 
-## 四位 Bot
+**把想法、资料和 AI 协作放进同一个工作台。** 造物坊是一款 macOS 桌面应用：你可以与不同职责的 Bot 对话，在选定的项目文件夹里处理产品规划、开发、测试和办公任务，并从任务列表与交付物页面回看结果。
 
-| Bot | 用途 | 典型交付 |
+> 当前是可体验的预览版。Bot 之间的交接由用户确认和操作；项目不会自动完成从 PRD 到上线的全部步骤。
+
+![造物坊首页：工作台、任务入口与四位 Bot](docs/images/zaowufang-home.png)
+
+## 和 Bot 一起推进任务
+
+| Bot | 适合做什么 | 可以交付什么 |
 | --- | --- | --- |
-| 产品 Bot | 梳理想法与需求 | PRD、用户流程、验收标准 |
-| 开发 Bot | 在选定工作区实现需求 | 代码、运行说明、测试结果 |
-| 测试 Bot | 对照验收标准核查 | 测试报告、可复现缺陷 |
-| 办公 Bot | 研究与日常办公 | 报告、资料整理、文档 |
+| 🔵 产品 Bot | 梳理目标用户、需求、范围与流程 | 产品方案、PRD、用户故事、验收标准 |
+| 🟠 开发 Bot | 在选定工作区实现已确认的需求 | 代码、运行说明、验证结果 |
+| 🟣 测试 Bot | 对照标准检查交付结果 | 测试记录、可复现的问题与证据 |
+| 🩷 办公 Bot | 研究、整理资料与日常办公 | 报告、文档和其他办公成果 |
 
-首页可直接选择 Bot 并发起真实会话。四位 Bot 使用各自的头像、规则和示例任务。产品到开发、开发到测试的交接由用户确认后手动切换 Bot，并把 PRD 或工作区交给下一位；自动状态机、自动发布和无人值守上线尚未实现。
+在首页选择 Bot，输入任务并指定项目文件夹，就能开始一段会话。侧栏的**任务列表**查看真实会话和运行状态；**交付物**按会话查看关联工作区中的文件。你可以在产品 Bot 产出方案后先审阅，再把确认过的需求交给开发 Bot，最后交给测试 Bot 检查。
 
-侧栏的「任务列表」展示真实会话及其运行状态；「交付物」按会话查看关联工作区中的文件。它们不代表自动完成了 PRD、开发和测试阶段。
+### 对话界面
+
+![造物坊产品 Bot 对话界面演示](docs/images/zaowufang-chat-demo.png)
+
+上图截取自真实安装版界面；“读书打卡工具”对话文字是专门填入的**演示内容**，用于展示消息、Bot 和项目文件区域的排版，并非模型实际输出，也不表示图中的 PRD 已生成。实际发送消息需要先配置可用模型或受支持的本地代理。
 
 ## 开始体验
 
-1. 从[最新发布页](https://github.com/siguadht/zaowufang/releases/tag/v2.2.3-zaowufang-sidebar-alignment)下载并安装 Apple Silicon 版 macOS 应用“造物坊”。
-2. 在设置中添加支持的模型提供商和 API Key，或配置项目支持的本地模型。模型的服务费用和可用性取决于提供商。
-3. 在首页选一位 Bot，选择项目文件夹，在输入框描述任务并发送。
-4. 先让产品 Bot 产出 PRD；确认后选开发 Bot 实现；再由测试 Bot 验收。涉及文件或代码的任务建议始终选定工作区。
+1. 从 [macOS 安装包发布页](https://github.com/siguadht/zaowufang/releases/tag/v2.2.3-zaowufang-sidebar-alignment) 下载“造物坊”（Apple Silicon）。
+2. 在设置中配置可用的模型提供商和 API Key，或项目支持的本地代理/模型。服务费用与可用性取决于提供商。
+3. 选择 Bot 和项目文件夹，在输入框里描述任务。建议先让产品 Bot 梳理需求，确认后再切换开发 Bot 和测试 Bot。
 
-没有模型配置时可以浏览界面与设置，但 AI 任务不会生成结果。不同模型和工具的实际编码能力有所差异。
+这是一个有人参与的工作流：目前没有自动阶段状态机、自动发布或无人值守上线。不同模型、代理和工具的实际能力也会影响结果。
 
-## 开发
+## 项目与许可
 
-`AionUi/` 是 Electron 前端；`AionCore/` 是 Rust 后端。两个目录保持同级。工程内的 `AionUi/AGENTS.md`、`AionCore/AGENTS.md` 和各自文档提供构建要求。本次 Bot 定义位于 `AionCore/crates/aionui-app/assets/builtin-assistants/`；前端入口位于 `AionUi/packages/desktop/src/renderer/pages/guid/`。
+`AionUi/` 是 Electron 前端，`AionCore/` 是 Rust 后端。产品范围见 [产品简报](docs/PRODUCT_BRIEF.md) 和 [PRD](docs/ZAOWUFANG_PRD.md)。
 
-产品范围与决策见 [PRODUCT_BRIEF](docs/PRODUCT_BRIEF.md) 和 [PRD](docs/ZAOWUFANG_PRD.md)。
+造物坊基于[产品经理工作台](https://github.com/Zhouchengjian-user/product-manager-workbench)改造；原项目基于 [AionUi](https://github.com/iOfficeAI/AionUi) 和 [AionCore](https://github.com/iOfficeAI/AionCore)。原仓库基线提交为 `d3179fecb1e528b6a952e58464f08ed434eca33e`。原 README 保存在 [docs/ORIGINAL_PROJECT_README.md](docs/ORIGINAL_PROJECT_README.md)；版权和许可见 [LICENSE](LICENSE)、[NOTICE](NOTICE)、[AionUi/LICENSE](AionUi/LICENSE) 与 [AionCore/LICENSE](AionCore/LICENSE)。
 
-## 来源与许可
-
-本版本基于原仓库提交 `d3179fecb1e528b6a952e58464f08ed434eca33e`。原项目由周承健基于 [AionUi](https://github.com/iOfficeAI/AionUi) 和 [AionCore](https://github.com/iOfficeAI/AionCore) 定制开发。原项目 README 保存在 [docs/ORIGINAL_PROJECT_README.md](docs/ORIGINAL_PROJECT_README.md)；版权与许可声明见 [LICENSE](LICENSE)、[NOTICE](NOTICE)、[AionUi/LICENSE](AionUi/LICENSE) 和 [AionCore/LICENSE](AionCore/LICENSE)。
-
-“造物坊”是此改版的产品名，不表示原作者或上游项目为它背书。
+“造物坊”是此改版的产品名，不代表原作者或上游项目为它背书。
