@@ -203,8 +203,7 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
             />
             <Button
               type={pathname === '/guid' ? 'secondary' : 'text'}
-              className={siderStyles.workbenchEntry}
-              icon={<DashboardOne size={18} />}
+              className={classNames(siderStyles.navEntry, collapsed && siderStyles.collapsedNavEntry)}
               onClick={() => {
                 closePreview();
                 setIsBatchMode(false);
@@ -212,12 +211,14 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
                 onSessionClick?.();
               }}
             >
-              {!collapsed && t('guid.sidebarWorkbench')}
+              <span className={siderStyles.navIconSlot}>
+                <DashboardOne size={18} />
+              </span>
+              {!collapsed && <span className={siderStyles.navLabel}>{t('guid.sidebarWorkbench')}</span>}
             </Button>
             <Button
               type={pathname === '/tasks' ? 'secondary' : 'text'}
-              className={siderStyles.workbenchEntry}
-              icon={<ListCheckbox size={18} />}
+              className={classNames(siderStyles.navEntry, collapsed && siderStyles.collapsedNavEntry)}
               onClick={() => {
                 closePreview();
                 setIsBatchMode(false);
@@ -225,12 +226,14 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
                 onSessionClick?.();
               }}
             >
-              {!collapsed && t('guid.sidebarTaskList')}
+              <span className={siderStyles.navIconSlot}>
+                <ListCheckbox size={18} />
+              </span>
+              {!collapsed && <span className={siderStyles.navLabel}>{t('guid.sidebarTaskList')}</span>}
             </Button>
             <Button
               type={pathname === '/deliverables' ? 'secondary' : 'text'}
-              className={siderStyles.workbenchEntry}
-              icon={<FolderClose size={18} />}
+              className={classNames(siderStyles.navEntry, collapsed && siderStyles.collapsedNavEntry)}
               onClick={() => {
                 closePreview();
                 setIsBatchMode(false);
@@ -238,18 +241,21 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
                 onSessionClick?.();
               }}
             >
-              {!collapsed && t('guid.sidebarDeliverables')}
+              <span className={siderStyles.navIconSlot}>
+                <FolderClose size={18} />
+              </span>
+              {!collapsed && <span className={siderStyles.navLabel}>{t('guid.sidebarDeliverables')}</span>}
             </Button>
             {botAssistants.length > 0 && (
               <div className={siderStyles.botTeamNav}>
-                {!collapsed && <div className={siderStyles.botTeamHeading}>{t('guid.botTeamTitle')}</div>}
+                {!collapsed && <div className={siderStyles.sectionHeading}>{t('guid.botTeamTitle')}</div>}
                 {botAssistants.map((assistant) => {
                   const avatar = resolveAssistantAvatar(assistant.avatar);
                   return (
                     <Button
                       key={assistant.id}
                       type='text'
-                      className={siderStyles.botTeamEntry}
+                      className={classNames(siderStyles.navEntry, collapsed && siderStyles.collapsedNavEntry)}
                       aria-label={assistant.name_i18n?.[localeKey] || assistant.name}
                       onClick={() => {
                         closePreview();
@@ -258,16 +264,26 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
                         onSessionClick?.();
                       }}
                     >
-                      <span className={siderStyles.botTeamAvatar}>
-                        {avatar.kind === 'image' && <ThemedLogo src={avatar.value} alt='' />}
+                      <span className={siderStyles.navIconSlot}>
+                        {avatar.kind === 'image' && (
+                          <ThemedLogo className={siderStyles.botTeamAvatar} src={avatar.value} alt='' />
+                        )}
                       </span>
-                      {!collapsed && <span>{assistant.name_i18n?.[localeKey] || assistant.name}</span>}
+                      {!collapsed && (
+                        <span className={siderStyles.navLabel}>
+                          {assistant.name_i18n?.[localeKey] || assistant.name}
+                        </span>
+                      )}
                     </Button>
                   );
                 })}
               </div>
             )}
-            {!collapsed && <div className={siderStyles.toolsHeading}>{t('guid.sidebarTools')}</div>}
+            {!collapsed && (
+              <div className={classNames(siderStyles.sectionHeading, siderStyles.toolsHeading)}>
+                {t('guid.sidebarTools')}
+              </div>
+            )}
             {/* Search entry — desktop moves this into the titlebar toolbar;
                 mobile keeps it here in the sidebar. */}
             {isMobile && (
@@ -290,10 +306,9 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
             {/* Scheduled tasks nav entry - fixed above scroll */}
             <Button
               type={pathname === '/model-bench' ? 'secondary' : 'text'}
-              className={siderStyles.workbenchEntry}
+              className={classNames(siderStyles.navEntry, collapsed && siderStyles.collapsedNavEntry)}
               aria-label={t('common.modelBench.title')}
               title={t('common.modelBench.title')}
-              icon={<Experiment size={18} />}
               onClick={() => {
                 cleanupSiderTooltips();
                 blurActiveElement();
@@ -303,7 +318,10 @@ const Sider: React.FC<SiderProps> = ({ onSessionClick, collapsed = false }) => {
                 onSessionClick?.();
               }}
             >
-              {!collapsed && t('common.modelBench.title')}
+              <span className={siderStyles.navIconSlot}>
+                <Experiment size={18} />
+              </span>
+              {!collapsed && <span className={siderStyles.navLabel}>{t('common.modelBench.title')}</span>}
             </Button>
             <SiderScheduledEntry
               isMobile={isMobile}

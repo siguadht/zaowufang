@@ -19,6 +19,7 @@ import { useSiderTeamBadges } from '@renderer/pages/team/hooks/useSiderTeamBadge
 import TeamCreateModal from '@renderer/pages/team/components/TeamCreateModal';
 import { ipcBridge } from '@/common';
 import SiderItem from './SiderItem';
+import siderStyles from './Sider.module.css';
 import type { SiderMenuItem } from './SiderItem';
 import { useSiderTeamRunning } from './useSiderTeamRunning';
 
@@ -184,7 +185,12 @@ const TeamSiderSection: React.FC<TeamSiderSectionProps> = ({
             data-testid='team-section-toggle'
             onClick={() => setExpanded((v) => !v)}
           >
-            <span className='text-14px text-t-tertiary sider-section-title group-hover/label:text-t-primary transition-colors font-[500] leading-none'>
+            <span
+              className={classNames(
+                'sider-section-title group-hover/label:text-t-primary transition-colors',
+                siderStyles.sectionTitle
+              )}
+            >
               {t('team.sider.title')}
             </span>
             <span className='ms-2px flex items-center justify-center opacity-0 group-hover/label:opacity-100 transition-opacity text-t-tertiary shrink-0'>

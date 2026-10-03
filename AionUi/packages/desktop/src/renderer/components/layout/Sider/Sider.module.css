@@ -89,24 +89,46 @@
   height: 0;
 }
 
-.workbenchEntry {
+.navEntry {
   width: 100%;
+  height: 38px !important;
   min-height: 38px !important;
   display: flex !important;
+  align-items: center !important;
   justify-content: flex-start !important;
   gap: 8px !important;
-  padding-inline: 12px !important;
+  padding: 0 12px !important;
+  border: 0 !important;
   text-align: left !important;
   color: var(--text-primary) !important;
+  font-family: inherit !important;
   font-size: 14px !important;
   font-weight: 500 !important;
+  line-height: 20px !important;
 }
 
-.workbenchEntry > :first-child {
-  width: 25px;
+.collapsedNavEntry {
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.navIconSlot {
+  width: 24px;
+  height: 24px;
   flex: none;
   display: inline-flex;
+  align-items: center;
   justify-content: center;
+  line-height: 0;
+}
+
+.navLabel {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  font: inherit;
+  line-height: 20px;
+  white-space: nowrap;
 }
 
 .botTeamNav {
@@ -115,36 +137,23 @@
   margin-top: 8px;
 }
 
-.botTeamHeading,
-.toolsHeading {
-  padding: 0 12px 8px;
+.sectionHeading,
+.sectionTitle {
   color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: 0.02em;
 }
 
-.botTeamEntry {
-  width: 100%;
-  min-height: 38px !important;
-  display: flex !important;
-  justify-content: flex-start !important;
-  gap: 8px !important;
-  padding-inline: 12px !important;
-  color: var(--text-primary) !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+.sectionHeading {
+  padding: 0 12px 8px;
 }
 
 .botTeamAvatar {
-  width: 25px;
-  height: 25px;
-  flex: none;
-}
-
-.botTeamAvatar img {
-  width: 100%;
-  height: 100%;
+  width: 24px;
+  height: 24px;
+  display: block;
   object-fit: contain;
 }
 
@@ -158,9 +167,10 @@
   justify-content: space-between;
   padding: 10px 12px 5px;
   color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: 0.02em;
 }
 
 .batchManageButton {
