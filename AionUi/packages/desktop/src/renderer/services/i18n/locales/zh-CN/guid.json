@@ -48,5 +48,6 @@
   "deliverablesFileHint": "点击文件可预览，点击文件夹可继续浏览",
   "deliverablesRefresh": "刷新文件",
   "taskHubEyebrow": "造物坊 · 工作空间",
-  "blueprintUnavailable": "Agent Blueprint 尚未就绪。请重启造物坊并检查模型设置。"
+  "blueprintUnavailable": "Agent Blueprint 尚未就绪。请重启造物坊并检查模型设置。",
+  "workflowUnavailable": "项目交接工具尚未就绪。请重启造物坊。"
 }

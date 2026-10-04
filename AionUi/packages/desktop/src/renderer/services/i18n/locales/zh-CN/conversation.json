@@ -782,5 +782,11 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "展开计划",
     "collapse": "收起计划"
+  },
+  "workflow": {
+    "toDeveloper": "交给开发 Bot",
+    "toQa": "交给测试 Bot",
+    "developerPrompt": "请读取当前工作区的项目流程状态和已确认 PRD。只有 PRD 已明确确认且文件未变更时才开始开发；先调用项目流程工具记录开工，再按 PRD 实现、验证并交给测试 Bot。",
+    "qaPrompt": "请读取当前工作区的项目流程状态、已确认 PRD、开发交付文件和验证记录。只有开发 Bot 已正式交接时才测试；实际运行验收并用项目流程工具记录通过或退回。"
   }
 }

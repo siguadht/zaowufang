@@ -17,7 +17,15 @@
 | 🟣 QA Bot | Check work against acceptance criteria | Test notes, reproducible issues, evidence |
 | 🩷 Office Bot | Research, organize material, and handle office work | Reports, documents, and other office deliverables |
 
-Pick a Bot on the home screen, enter a task, and choose a project folder to start a conversation. **Task List** shows real conversations and their runtime status. **Deliverables** shows files associated with each conversation's workspace. You can review the Product Bot's plan before handing approved requirements to the Developer Bot, then ask the QA Bot to check the result.
+Pick a Bot on the home screen, enter a task, and choose a project folder to start a conversation. **Task List** shows real conversations and their runtime status. **Deliverables** shows files associated with each conversation's workspace.
+
+### From PRD to QA
+
+1. Product Bot uses Agent Blueprint when drafting a PRD. After you review and explicitly approve a specific PRD, it records the approved file version.
+2. Use **Continue with Developer Bot** in the conversation header. The new task keeps the same workspace. Development is blocked if the PRD was never approved or changed after approval. Developer Bot records actual files and verification results before handoff.
+3. Use **Continue with QA Bot** to test against the PRD and record acceptance or requested changes. The workflow state is saved in `.zaowufang/project-workflow.json` so it survives an app restart.
+
+You initiate each handoff. The model still has to call the workflow tools as instructed; the saved stage gate does not replace your review of code and test evidence.
 
 ### Conversation view
 
@@ -27,11 +35,11 @@ This is a screenshot of the installed app. The reading tracker conversation was 
 
 ## Try it
 
-1. Download the Apple Silicon macOS build from the [release page](https://github.com/siguadht/zaowufang/releases/tag/v2.2.3-zaowufang-sidebar-alignment).
+1. Download the Apple Silicon macOS build from the [release page](https://github.com/siguadht/zaowufang/releases/tag/v2.2.3-zaowufang-workflow).
 2. Configure a supported model provider and API key, or a supported local agent/model, in Settings. Availability and charges depend on the provider.
 3. Choose a Bot and project folder, then describe your task. A practical starting point is to have Product Bot draft requirements, review them, then move to Developer Bot and QA Bot.
 
-This is a human guided workflow. Automatic stage transitions, automatic publishing, and unattended deployment are not implemented. Results also depend on the capabilities of the chosen model, agent, and tools.
+This is a human guided workflow with persisted stage records and gates. Unattended cross Bot execution, publishing, and deployment are not implemented. Results also depend on the chosen model, agent, and tools.
 
 ## Project and licenses
 

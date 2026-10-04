@@ -16,8 +16,8 @@ import { type TFunction } from 'i18next';
 import type { NavigateFunction } from 'react-router-dom';
 import { mutate as swrMutate } from 'swr';
 import { getConversationCreateErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
-import { BLUEPRINT_MCP_NAME } from '@/common/config/constants';
-import { withProductBlueprintMcp } from '../utils/assistantDefaults';
+import { BLUEPRINT_MCP_NAME, PROJECT_WORKFLOW_MCP_NAME } from '@/common/config/constants';
+import { withBotRequiredMcps } from '../utils/assistantDefaults';
 
 export type GuidSendDeps = {
   // Input state
@@ -120,7 +120,14 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
       Message.error(t('guid.blueprintUnavailable'));
       return;
     }
-    const selectedAllMcpServerIds = withProductBlueprintMcp(
+    if (
+      ['xuzuo-product', 'xuzuo-developer', 'xuzuo-qa'].includes(selectedAssistantId) &&
+      !availableMcpServers.some((server) => server.name === PROJECT_WORKFLOW_MCP_NAME && server.enabled)
+    ) {
+      Message.error(t('guid.workflowUnavailable'));
+      return;
+    }
+    const selectedAllMcpServerIds = withBotRequiredMcps(
       selectedAssistantId,
       selectedMcpServerIds ?? [],
       availableMcpServers
@@ -135,7 +142,7 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const selectedSessionMcpServers = availableMcpServers
       .filter((server) => selectedMcpServerIdSet.has(server.id) && server.builtin === true)
       .map((server) => toSessionMcpServer(server));
-    const defaultSelectedMcpServerIds = withProductBlueprintMcp(
+    const defaultSelectedMcpServerIds = withBotRequiredMcps(
       selectedAssistantId,
       assistantDefaultMcpIds ?? [],
       availableMcpServers

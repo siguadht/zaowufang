@@ -8,7 +8,7 @@ import { ipcBridge } from '@/common';
 import { buildGuidSlashCommands } from '@/common/chat/slash/guidSlashCommands';
 import type { SlashCommandItem } from '@/common/chat/slash/types';
 import type { IMcpServer, TProviderWithModel } from '@/common/config/storage';
-import { BLUEPRINT_MCP_NAME } from '@/common/config/constants';
+import { BLUEPRINT_MCP_NAME, PROJECT_WORKFLOW_MCP_NAME } from '@/common/config/constants';
 import { resolveLocaleKey } from '@/common/utils';
 import type { AssistantDetail } from '@/common/types/agent/assistantTypes';
 import { APP_DISPLAY_NAME } from '@/common/branding';
@@ -21,7 +21,7 @@ import AssistantSelectionArea from './components/AssistantSelectionArea';
 import ThemedLogo from '@/renderer/components/agent/ThemedLogo';
 import { resolveAssistantAvatar } from '@/renderer/utils/model/assistantAvatar';
 import GuidActionRow from './components/GuidActionRow';
-import { resolveGuidAssistantDefaults, withProductBlueprintMcp } from './utils/assistantDefaults';
+import { resolveGuidAssistantDefaults, withBotRequiredMcps } from './utils/assistantDefaults';
 import GuidInputCard from './components/GuidInputCard';
 import GuidModelSelector from './components/GuidModelSelector';
 import { useGuidAssistantSelection } from './hooks/useGuidAssistantSelection';
@@ -148,8 +148,13 @@ const GuidPage: React.FC = () => {
   const handleToggleMcpServer = useCallback(
     (serverId: string) => {
       if (
-        selectedAssistantId === 'xuzuo-product' &&
-        availableMcpServers.some((server) => server.id === serverId && server.name === BLUEPRINT_MCP_NAME)
+        ['xuzuo-product', 'xuzuo-developer', 'xuzuo-qa'].includes(selectedAssistantId ?? '') &&
+        availableMcpServers.some(
+          (server) =>
+            server.id === serverId &&
+            (server.name === PROJECT_WORKFLOW_MCP_NAME ||
+              (selectedAssistantId === 'xuzuo-product' && server.name === BLUEPRINT_MCP_NAME))
+        )
       )
         return;
       setGuidSelectedMcpServerIds((prev) => {
@@ -460,7 +465,7 @@ const GuidPage: React.FC = () => {
         }
       }
       setGuidSelectedMcpServerIds(
-        withProductBlueprintMcp(agentSelection.selectedAssistantId, resolvedDefaults.mcpIds, availableMcpServers)
+        withBotRequiredMcps(agentSelection.selectedAssistantId, resolvedDefaults.mcpIds, availableMcpServers)
       );
     };
 
@@ -644,7 +649,7 @@ const GuidPage: React.FC = () => {
       enabledSkills={guidEnabledSkills ?? []}
       onToggleSkill={handleToggleSkill}
       mcpServers={availableMcpServers}
-      selectedMcpServerIds={withProductBlueprintMcp(
+      selectedMcpServerIds={withBotRequiredMcps(
         agentSelection.selectedAssistantId,
         guidSelectedMcpServerIds ?? [],
         availableMcpServers

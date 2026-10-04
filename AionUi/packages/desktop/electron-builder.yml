@@ -215,6 +215,7 @@ asarUnpack:
   - 'out/main/builtin-mcp-image-gen.js'
   - 'out/main/builtin-mcp-browser.js'
   - 'out/main/builtin-mcp-blueprint.js'
+  - 'out/main/builtin-mcp-workflow.js'
   - 'out/main/team-mcp-stdio.js'
 
 # Compression level: normal for faster builds, maximum for smallest size

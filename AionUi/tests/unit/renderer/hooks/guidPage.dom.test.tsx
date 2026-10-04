@@ -237,7 +237,7 @@ vi.mock('@/renderer/utils/platform', () => ({
 
 vi.mock('@/renderer/pages/guid/utils/assistantDefaults', () => ({
   resolveGuidAssistantDefaults: (...args: unknown[]) => resolveGuidAssistantDefaultsMock(...args),
-  withProductBlueprintMcp: (_assistantId: string | null, selectedIds: string[]) => selectedIds,
+  withBotRequiredMcps: (_assistantId: string | null, selectedIds: string[]) => selectedIds,
 }));
 
 const swrMock = vi.hoisted(() => ({

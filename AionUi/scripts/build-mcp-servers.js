@@ -42,6 +42,11 @@ async function main() {
       entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/blueprintServer.ts')],
       outfile: path.join(ROOT, 'out/main/builtin-mcp-blueprint.js'),
     }),
+    esbuild.build({
+      ...SHARED_OPTIONS,
+      entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/workflowServer.ts')],
+      outfile: path.join(ROOT, 'out/main/builtin-mcp-workflow.js'),
+    }),
   ]);
 }
 

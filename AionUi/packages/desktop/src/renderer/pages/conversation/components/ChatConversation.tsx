@@ -179,6 +179,7 @@ const AionrsConversationPanel: React.FC<{ conversation: AionrsConversation; slid
   const cronJobId = resolveCronJobId(conversation.extra);
   const { info: presetAssistantInfo } = usePresetAssistantInfo(conversation);
   const aionrsAssistantId = presetAssistantInfo?.assistantId;
+  const navigate = useNavigate();
   const layout = useLayoutContext();
   // Mobile: model selection moved into the sendbox `+` action sheet to free up
   // header space; the dropdown stays available on desktop and tablets ≥768px.
@@ -208,6 +209,30 @@ const AionrsConversationPanel: React.FC<{ conversation: AionrsConversation; slid
     sider: <ChatSlider conversation={conversation} />,
     headerExtra: (
       <div className='flex items-center gap-8px'>
+        {conversation.extra?.workspace &&
+          (aionrsAssistantId === 'xuzuo-product' || aionrsAssistantId === 'xuzuo-developer') && (
+            <Button
+              size='mini'
+              onClick={() => {
+                const toDeveloper = aionrsAssistantId === 'xuzuo-product';
+                void navigate('/guid', {
+                  state: {
+                    selectedAssistantId: toDeveloper ? 'xuzuo-developer' : 'xuzuo-qa',
+                    workspace: conversation.extra?.workspace,
+                    prefillPrompt: t(
+                      toDeveloper ? 'conversation.workflow.developerPrompt' : 'conversation.workflow.qaPrompt'
+                    ),
+                  },
+                });
+              }}
+            >
+              {t(
+                aionrsAssistantId === 'xuzuo-product'
+                  ? 'conversation.workflow.toDeveloper'
+                  : 'conversation.workflow.toQa'
+              )}
+            </Button>
+          )}
         <CronJobManager conversation_id={conversation.id} cron_job_id={cronJobId} />
         {!isMobile && (
           <AionrsModelSelector

@@ -48,5 +48,6 @@
   "deliverablesFileHint": "Click a file to preview it or a folder to browse",
   "deliverablesRefresh": "Refresh files",
   "taskHubEyebrow": "ZAOWUFANG / WORKSPACE",
-  "blueprintUnavailable": "Agent Blueprint is unavailable. Restart Zaowufang and check the model settings."
+  "blueprintUnavailable": "Agent Blueprint is unavailable. Restart Zaowufang and check the model settings.",
+  "workflowUnavailable": "Project handoff tools are unavailable. Restart Zaowufang."
 }

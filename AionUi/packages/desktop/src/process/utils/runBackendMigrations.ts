@@ -11,7 +11,7 @@ import { migrateConfigStorage, migrateLegacyMcpConfigToDb, migrateProviders } fr
 import { httpRequest } from '@/common/adapter/httpBridge';
 import { mcpService } from '@/common/adapter/ipcBridge';
 import type { ImageGenerationModelSetting } from '@/common/config/clientSettings';
-import { BLUEPRINT_MCP_NAME, BUILTIN_BROWSER_MCP_NAME } from '@/common/config/constants';
+import { BLUEPRINT_MCP_NAME, BUILTIN_BROWSER_MCP_NAME, PROJECT_WORKFLOW_MCP_NAME } from '@/common/config/constants';
 import { APP_DISPLAY_NAME } from '@/common/branding';
 import {
   removeImageGenerationEnvKeys,
@@ -137,6 +137,18 @@ function buildBuiltinBlueprintServer(selection: ReturnType<typeof resolveBluepri
     builtin: true,
     transport: { type: 'stdio', ...serverConfig },
     original_json: JSON.stringify({ mcpServers: { [BLUEPRINT_MCP_NAME]: serverConfig } }, null, 2),
+  };
+}
+
+function buildProjectWorkflowServer(): McpImportServer {
+  const serverConfig = { command: 'node', args: [getBuiltinMcpScriptPath('builtin-mcp-workflow')] };
+  return {
+    name: PROJECT_WORKFLOW_MCP_NAME,
+    description: 'Persist confirmed PRD, development, and QA handoffs in a shared project workspace.',
+    enabled: true,
+    builtin: true,
+    transport: { type: 'stdio', ...serverConfig },
+    original_json: JSON.stringify({ mcpServers: { [PROJECT_WORKFLOW_MCP_NAME]: serverConfig } }, null, 2),
   };
 }
 
@@ -374,8 +386,9 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   logImageGenerationEnvResolution(imageEnvResolution, 'bootstrap');
   const imageServer = buildBuiltinImageGenerationServer(imageEnvResolution, imageConfig);
   const blueprintServer = buildBuiltinBlueprintServer(resolveBlueprintProvider(providers, productModelId));
+  const workflowServer = buildProjectWorkflowServer();
   const defaultServers = buildDefaultMcpServers();
-  const missing = [...defaultServers, imageServer, blueprintServer].filter(
+  const missing = [...defaultServers, imageServer, blueprintServer, workflowServer].filter(
     (server) => !existingByName.has(server.name)
   );
   let imageServerUpdated = false;
@@ -516,6 +529,21 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     }
     if (existingBlueprintServer.enabled !== blueprintServer.enabled) {
       await mcpService.toggleServer.invoke({ id: existingBlueprintServer.id });
+    }
+  }
+  const existingWorkflowServer = existingByName.get(PROJECT_WORKFLOW_MCP_NAME);
+  if (existingWorkflowServer) {
+    if (
+      !isSameStdioTransport(existingWorkflowServer.transport, workflowServer.transport) ||
+      existingWorkflowServer.original_json !== workflowServer.original_json
+    ) {
+      await mcpService.updateServer.invoke({
+        id: existingWorkflowServer.id,
+        data: { transport: workflowServer.transport, original_json: workflowServer.original_json },
+      });
+    }
+    if (existingWorkflowServer.enabled !== true) {
+      await mcpService.toggleServer.invoke({ id: existingWorkflowServer.id });
     }
   }
   console.info(

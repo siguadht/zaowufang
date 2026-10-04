@@ -782,5 +782,11 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "展開計劃",
     "collapse": "收合計劃"
+  },
+  "workflow": {
+    "toDeveloper": "Continue with Developer Bot",
+    "toQa": "Continue with QA Bot",
+    "developerPrompt": "Read the project workflow status and confirmed PRD in this workspace. Start development only after explicit PRD approval and an unchanged file. Record the start with the workflow tool, implement and verify the PRD, then hand off to QA Bot.",
+    "qaPrompt": "Read the workflow status, confirmed PRD, implementation files, and verification evidence in this workspace. Test only after Developer Bot has handed off. Run the acceptance checks and record pass or changes requested with the workflow tool."
   }
 }

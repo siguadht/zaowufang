@@ -1,6 +1,6 @@
 import type { AssistantDetail } from '@/common/types/agent/assistantTypes';
 import type { IMcpServer } from '@/common/config/storage';
-import { BLUEPRINT_MCP_NAME } from '@/common/config/constants';
+import { BLUEPRINT_MCP_NAME, PROJECT_WORKFLOW_MCP_NAME } from '@/common/config/constants';
 
 /** Product Bot always takes the Blueprint MCP into each new conversation. */
 export const withProductBlueprintMcp = (
@@ -11,6 +11,18 @@ export const withProductBlueprintMcp = (
   if (assistantId !== 'xuzuo-product') return selectedIds;
   const blueprint = availableServers.find((server) => server.name === BLUEPRINT_MCP_NAME && server.enabled);
   return blueprint ? [...new Set([...selectedIds, blueprint.id])] : selectedIds;
+};
+
+/** Product, Developer, and QA Bots share the same persisted project workflow. */
+export const withBotRequiredMcps = (
+  assistantId: string | null,
+  selectedIds: string[],
+  availableServers: IMcpServer[]
+): string[] => {
+  const withBlueprint = withProductBlueprintMcp(assistantId, selectedIds, availableServers);
+  if (!['xuzuo-product', 'xuzuo-developer', 'xuzuo-qa'].includes(assistantId ?? '')) return withBlueprint;
+  const workflow = availableServers.find((server) => server.name === PROJECT_WORKFLOW_MCP_NAME && server.enabled);
+  return workflow ? [...new Set([...withBlueprint, workflow.id])] : withBlueprint;
 };
 
 export type ResolvedGuidAssistantDefaults = {

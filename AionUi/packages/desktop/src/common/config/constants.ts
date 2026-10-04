@@ -33,6 +33,9 @@ export const BROWSER_SESSION_PARTITION = 'persist:aionui-browser';
 /** Product Bot's mandatory planning engine MCP registration name. */
 export const BLUEPRINT_MCP_NAME = 'zaowufang-agent-blueprint';
 
+/** Persistent PRD-to-development-to-test handoff tools for Zaowufang Bots. */
+export const PROJECT_WORKFLOW_MCP_NAME = 'zaowufang-project-workflow';
+
 /**
  * 内置浏览器 MCP 的注册名。
  *

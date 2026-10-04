@@ -5,8 +5,12 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { resolveGuidAssistantDefaults, withProductBlueprintMcp } from '@/renderer/pages/guid/utils/assistantDefaults';
-import { BLUEPRINT_MCP_NAME } from '@/common/config/constants';
+import {
+  resolveGuidAssistantDefaults,
+  withBotRequiredMcps,
+  withProductBlueprintMcp,
+} from '@/renderer/pages/guid/utils/assistantDefaults';
+import { BLUEPRINT_MCP_NAME, PROJECT_WORKFLOW_MCP_NAME } from '@/common/config/constants';
 import type { IMcpServer } from '@/common/config/storage';
 import type { AssistantDetail } from '@/common/types/agent/assistantTypes';
 
@@ -182,5 +186,24 @@ describe('withProductBlueprintMcp', () => {
   it('keeps it out of other assistants and unavailable servers', () => {
     expect(withProductBlueprintMcp('xuzuo-developer', [], [server])).toEqual([]);
     expect(withProductBlueprintMcp('xuzuo-product', [], [{ ...server, enabled: false }])).toEqual([]);
+  });
+});
+
+describe('withBotRequiredMcps', () => {
+  const workflow = { id: 'workflow-id', name: PROJECT_WORKFLOW_MCP_NAME, enabled: true } as IMcpServer;
+  const blueprint = { id: 'blueprint-id', name: BLUEPRINT_MCP_NAME, enabled: true } as IMcpServer;
+
+  it('adds both planning and workflow tools to Product Bot', () => {
+    expect(withBotRequiredMcps('xuzuo-product', [], [workflow, blueprint])).toEqual(['blueprint-id', 'workflow-id']);
+  });
+
+  it('adds only workflow tools to Developer and QA Bots', () => {
+    expect(withBotRequiredMcps('xuzuo-developer', [], [workflow, blueprint])).toEqual(['workflow-id']);
+    expect(withBotRequiredMcps('xuzuo-qa', [], [workflow, blueprint])).toEqual(['workflow-id']);
+  });
+
+  it('leaves unrelated assistants untouched and ignores unavailable workflow tools', () => {
+    expect(withBotRequiredMcps('xuzuo-office', [], [workflow])).toEqual([]);
+    expect(withBotRequiredMcps('xuzuo-developer', [], [{ ...workflow, enabled: false }])).toEqual([]);
   });
 });
