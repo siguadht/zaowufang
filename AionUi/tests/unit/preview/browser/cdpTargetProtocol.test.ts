@@ -144,6 +144,19 @@ describe('cdpTargetProtocol — session routing', () => {
   it('rejects a foreign sessionId rather than treating it as browser-level', () => {
     expect(isAcceptableSessionId('some-other-session')).toBe(false);
   });
+
+  it('retires the old session when a different webview becomes active', () => {
+    const replacement = `${SINGLE_SESSION_ID}-2`;
+    expect(isAcceptableSessionId(SINGLE_SESSION_ID, replacement)).toBe(false);
+    expect(isAcceptableSessionId(replacement, replacement)).toBe(true);
+    const decision = decideCdpCommand(
+      { id: 11, method: 'Target.attachToTarget', params: { targetId: SINGLE_TARGET_ID } },
+      targetInfo,
+      () => replacement
+    );
+    expect(decision.kind).toBe('reply-and-emit');
+    if (decision.kind === 'reply-and-emit') expect(decision.payload.sessionId).toBe(replacement);
+  });
 });
 
 describe('cdpTargetProtocol — token comparison', () => {

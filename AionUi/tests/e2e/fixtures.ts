@@ -166,8 +166,10 @@ function resolvePackagedApp(): { executablePath: string; cwd: string } | null {
       if (!fs.existsSync(macDir)) continue;
       const appBundle = fs.readdirSync(macDir).find((f) => f.endsWith('.app'));
       if (appBundle) {
-        const exe = path.join(macDir, appBundle, 'Contents', 'MacOS', 'AionUi');
-        if (fs.existsSync(exe)) return { executablePath: exe, cwd: macDir };
+        for (const executable of [appBundle.replace(/\.app$/, ''), 'AionUi', 'Granto']) {
+          const exe = path.join(macDir, appBundle, 'Contents', 'MacOS', executable);
+          if (fs.existsSync(exe)) return { executablePath: exe, cwd: macDir };
+        }
       }
     }
   } else {

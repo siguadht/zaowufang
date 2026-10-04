@@ -37,7 +37,7 @@
 
 import { APP_DISPLAY_NAME } from '@/common/branding';
 
-/** 伪造的稳定 id：只有一个目标，不需要真的分配。/ Fixed ids — there is only ever one target. */
+/** Stable target id; session ids gain a generation suffix when the backing webview changes. */
 export const SINGLE_TARGET_ID = 'aionui-browser-target';
 export const SINGLE_SESSION_ID = 'aionui-browser-session';
 export const SINGLE_BROWSER_CONTEXT_ID = 'aionui-browser-context';
@@ -123,7 +123,11 @@ export const buildListPayload = (wsUrl: string, title: string, url: string) => [
  * while it kept driving the old one — a failure far harder to diagnose than an explicit
  * error.
  */
-export const decideCdpCommand = (req: CdpRequest, getTargetInfo: () => TargetInfo): CdpDecision => {
+export const decideCdpCommand = (
+  req: CdpRequest,
+  getTargetInfo: () => TargetInfo,
+  getSessionId: () => string = () => SINGLE_SESSION_ID
+): CdpDecision => {
   const method = req.method ?? '';
 
   switch (method) {
@@ -193,7 +197,7 @@ export const decideCdpCommand = (req: CdpRequest, getTargetInfo: () => TargetInf
         emit: [
           {
             method: 'Target.attachedToTarget',
-            params: { sessionId: SINGLE_SESSION_ID, targetInfo: getTargetInfo(), waitingForDebugger: false },
+            params: { sessionId: getSessionId(), targetInfo: getTargetInfo(), waitingForDebugger: false },
           },
         ],
       };
@@ -223,11 +227,11 @@ export const decideCdpCommand = (req: CdpRequest, getTargetInfo: () => TargetInf
       }
       return {
         kind: 'reply-and-emit',
-        payload: { sessionId: SINGLE_SESSION_ID },
+        payload: { sessionId: getSessionId() },
         emit: [
           {
             method: 'Target.attachedToTarget',
-            params: { sessionId: SINGLE_SESSION_ID, targetInfo: getTargetInfo(), waitingForDebugger: false },
+            params: { sessionId: getSessionId(), targetInfo: getTargetInfo(), waitingForDebugger: false },
           },
         ],
       };
@@ -270,15 +274,15 @@ export const decideCdpCommand = (req: CdpRequest, getTargetInfo: () => TargetInf
 /**
  * 判断入站 sessionId 是否可接受。
  *
- * 空 sessionId = 浏览器级命令；我们那个固定 session = 页面级。其余一律拒绝，
+ * 空 sessionId = 浏览器级命令；当前活动 session = 页面级。其余一律拒绝，
  * 而不是当成浏览器级放过去 —— 静默放行会让错路由的命令看起来「成功」。
  *
- * An empty sessionId means a browser-level command; our fixed session means page level.
+ * An empty sessionId means a browser-level command; the active session means page level.
  * Anything else is rejected rather than quietly treated as browser-level, since letting
  * it through would make a misrouted command look like it succeeded.
  */
-export const isAcceptableSessionId = (sessionId: string | undefined): boolean =>
-  sessionId === undefined || sessionId === '' || sessionId === SINGLE_SESSION_ID;
+export const isAcceptableSessionId = (sessionId: string | undefined, activeSessionId = SINGLE_SESSION_ID): boolean =>
+  sessionId === undefined || sessionId === '' || sessionId === activeSessionId;
 
 /** 常量时间比较，避免用字符串比较泄漏 token 前缀信息。/ Constant-time compare so token prefixes do not leak. */
 export const tokensMatch = (a: string, b: string): boolean => {

@@ -25,6 +25,7 @@ import { webContents, type Debugger, type WebContents } from 'electron';
 import { APP_DISPLAY_NAME } from '@/common/branding';
 import {
   SINGLE_SESSION_ID,
+  SINGLE_TARGET_ID,
   buildListPayload,
   buildTargetInfo,
   buildVersionPayload,
@@ -56,6 +57,9 @@ type AttachedState = {
 
 let attached: AttachedState | null = null;
 let sockets = new Set<WebSocket>();
+const announcedSessionsBySocket = new WeakMap<WebSocket, Set<string>>();
+let sessionGeneration = 0;
+let activeSessionId = SINGLE_SESSION_ID;
 
 const currentTargetInfo = () => {
   if (!attached || attached.contents.isDestroyed()) return buildTargetInfo('', 'about:blank');
@@ -65,8 +69,22 @@ const currentTargetInfo = () => {
 const broadcast = (payload: Record<string, unknown>) => {
   const text = JSON.stringify(payload);
   for (const ws of sockets) {
-    if (ws.readyState === ws.OPEN) ws.send(text);
+    if (ws.readyState !== ws.OPEN) continue;
+    if (payload.method === 'Target.attachedToTarget') {
+      const sessionId = (payload.params as { sessionId?: string } | undefined)?.sessionId;
+      const announced = announcedSessionsBySocket.get(ws);
+      if (sessionId && announced?.has(sessionId)) continue;
+      if (sessionId) announced?.add(sessionId);
+    }
+    ws.send(text);
   }
+};
+
+const announceSessionDetached = () => {
+  broadcast({
+    method: 'Target.detachedFromTarget',
+    params: { sessionId: activeSessionId, targetId: SINGLE_TARGET_ID },
+  });
 };
 
 const detachInternal = () => {
@@ -112,7 +130,6 @@ const attachInternal = (webContentsId: number): { ok: true } | { ok: false; reas
   }
 
   if (attached?.contents.id === webContentsId) return { ok: true };
-  detachInternal();
 
   const dbg = contents.debugger;
   try {
@@ -122,28 +139,44 @@ const attachInternal = (webContentsId: number): { ok: true } | { ok: false; reas
     return { ok: false, reason: `Could not attach debugger (DevTools open on this view will block it): ${message}` };
   }
 
+  // Puppeteer caches the main frame on its CDPSession. Reusing that session after
+  // changing webContents makes DOM, Accessibility and Page.navigate address the old
+  // frame. Retire it before exposing the new webview under a fresh session id.
+  announceSessionDetached();
+  detachInternal();
+  sessionGeneration += 1;
+  activeSessionId = `${SINGLE_SESSION_ID}-${sessionGeneration}`;
+
   const onMessage = (_event: unknown, method: string, params: unknown, _sessionId: string) => {
     /**
-     * 统一贴上我们那个固定 sessionId 再转发。
+     * 统一贴上当前 webview 的 sessionId 再转发。
      *
      * puppeteer 用 flatten 模式，它靠 sessionId 把事件路由到对应的页面会话；不贴的话
      * 事件会被当成浏览器级的，Page/Runtime 那些事件就丢了。
      *
-     * Stamp our fixed sessionId before forwarding. puppeteer runs in flatten mode and
+     * Stamp the active sessionId before forwarding. puppeteer runs in flatten mode and
      * routes events to the page session by sessionId; without it these would look
      * browser-level and Page/Runtime events would be dropped.
      */
-    broadcast({ method, params: params ?? {}, sessionId: SINGLE_SESSION_ID });
+    if (attached?.contents.id !== webContentsId) return;
+    broadcast({ method, params: params ?? {}, sessionId: activeSessionId });
   };
 
   const onDestroyed = () => {
+    announceSessionDetached();
     detachInternal();
-    broadcast({ method: 'Target.targetDestroyed', params: { targetId: currentTargetInfo().targetId } });
+    broadcast({ method: 'Target.targetDestroyed', params: { targetId: SINGLE_TARGET_ID } });
   };
 
   dbg.on('message', onMessage);
   contents.once('destroyed', onDestroyed);
   attached = { contents, dbg, onMessage, onDestroyed };
+  broadcast({ method: 'Target.targetCreated', params: { targetInfo: currentTargetInfo() } });
+  broadcast({
+    method: 'Target.attachedToTarget',
+    params: { sessionId: activeSessionId, targetInfo: currentTargetInfo(), waitingForDebugger: false },
+  });
+  console.info('[cdpBridge] Browser target attached', { webContentsId, sessionGeneration });
   return { ok: true };
 };
 
@@ -196,12 +229,12 @@ const handleSocketMessage = async (ws: WebSocket, raw: string, announcedSessions
   const { id, method, params, sessionId } = req;
   if (!method) return;
 
-  if (!isAcceptableSessionId(sessionId)) {
+  if (!isAcceptableSessionId(sessionId, activeSessionId)) {
     sendError(ws, id, `Unknown sessionId: ${sessionId}`, sessionId);
     return;
   }
 
-  const decision = decideCdpCommand(req, currentTargetInfo);
+  const decision = decideCdpCommand(req, currentTargetInfo, () => activeSessionId);
 
   if (decision.kind === 'error') {
     sendError(ws, id, decision.message, sessionId);
@@ -280,8 +313,13 @@ const handleSocketMessage = async (ws: WebSocket, raw: string, announcedSessions
     return;
   }
 
+  const commandAttachment = attached;
   try {
-    const result = await attached.dbg.sendCommand(method, params ?? {});
+    const result = await commandAttachment.dbg.sendCommand(method, params ?? {});
+    if (attached !== commandAttachment) {
+      sendError(ws, id, 'The browser tab changed while this command was running.', sessionId);
+      return;
+    }
     ws.send(JSON.stringify({ id, result: result ?? {}, sessionId }));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -369,6 +407,7 @@ export const startCdpBridge = async (): Promise<CdpBridgeHandle> => {
     wss.handleUpgrade(req, socket, head, (ws) => {
       sockets.add(ws);
       const announcedSessions = new Set<string>();
+      announcedSessionsBySocket.set(ws, announcedSessions);
       ws.on('message', (data) => void handleSocketMessage(ws, data.toString(), announcedSessions));
       ws.on('close', () => sockets.delete(ws));
       ws.on('error', () => sockets.delete(ws));
@@ -391,7 +430,12 @@ export const startCdpBridge = async (): Promise<CdpBridgeHandle> => {
     token,
     attachedWebContentsId: () => (attached && !attached.contents.isDestroyed() ? attached.contents.id : null),
     attach: attachInternal,
-    detach: detachInternal,
+    detach: () => {
+      if (!attached) return;
+      announceSessionDetached();
+      detachInternal();
+      broadcast({ method: 'Target.targetDestroyed', params: { targetId: SINGLE_TARGET_ID } });
+    },
     close: async () => {
       detachInternal();
       for (const ws of sockets) ws.close();

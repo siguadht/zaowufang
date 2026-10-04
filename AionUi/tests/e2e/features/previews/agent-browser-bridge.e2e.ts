@@ -277,4 +277,122 @@ test.describe('Agent browser control (single-target CDP bridge)', () => {
     // silently permissive attach.
     expect(result.msg ?? '').toMatch(/only the in-app browser webview|Refusing to attach/i);
   });
+
+  test('replaces the page session when the visible webview changes', async ({ electronApp, page }) => {
+    const server = http.createServer((req, res) => {
+      res.setHeader('Content-Type', 'text/html');
+      res.end(`<html><title>${req.url}</title><body><h1>${req.url}</h1></body></html>`);
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Test page server did not bind');
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+    let socket: WebSocket | undefined;
+
+    const openGuest = (url: string) =>
+      page.evaluate(async (targetUrl) => {
+        const guest = document.createElement('webview') as Electron.WebviewTag;
+        guest.src = targetUrl;
+        guest.style.cssText = 'position:fixed;width:320px;height:240px;top:0;left:0';
+        document.body.appendChild(guest);
+        await new Promise<void>((resolve, reject) => {
+          guest.addEventListener('dom-ready', () => resolve(), { once: true });
+          setTimeout(() => reject(new Error('Guest webview did not become ready')), 15_000);
+        });
+        return guest.getWebContentsId();
+      }, url);
+
+    try {
+      const firstId = await openGuest(`${baseUrl}/first`);
+      expect(
+        (
+          await invokeBridge<{ success: boolean }>(page, 'app.report-browser-webcontents-id', {
+            webContentsId: firstId,
+          })
+        ).success
+      ).toBe(true);
+
+      const { port } = await readBridgeEnv(electronApp);
+      if (!port) throw new Error('CDP bridge port is unavailable');
+      const discovery = await httpGetFromTestProcess(port, '/json/version');
+      if (!discovery) throw new Error('CDP discovery is unavailable');
+      const wsUrl = (JSON.parse(discovery) as { webSocketDebuggerUrl: string }).webSocketDebuggerUrl;
+      socket = new WebSocket(wsUrl);
+      const ws = socket;
+      await new Promise<void>((resolve, reject) => {
+        ws.once('open', () => resolve());
+        ws.once('error', reject);
+      });
+
+      type Message = {
+        id?: number;
+        method?: string;
+        params?: Record<string, unknown>;
+        result?: Record<string, unknown>;
+        error?: unknown;
+      };
+      let nextId = 0;
+      const pending = new Map<number, (message: Message) => void>();
+      const events: Message[] = [];
+      ws.on('message', (bytes) => {
+        const message = JSON.parse(String(bytes)) as Message;
+        if (message.id && pending.has(message.id)) pending.get(message.id)?.(message);
+        else events.push(message);
+      });
+      const send = (method: string, params: Record<string, unknown> = {}, sessionId?: string) =>
+        new Promise<Message>((resolve) => {
+          const id = ++nextId;
+          pending.set(id, (message) => {
+            pending.delete(id);
+            resolve(message);
+          });
+          ws.send(JSON.stringify({ id, method, params, sessionId }));
+        });
+      const waitForEvent = async (method: string, predicate: (message: Message) => boolean) => {
+        const deadline = Date.now() + 10_000;
+        while (Date.now() < deadline) {
+          const match = events.find((event) => event.method === method && predicate(event));
+          if (match) return match;
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        throw new Error(`Timed out waiting for ${method}`);
+      };
+
+      await send('Target.setDiscoverTargets', { discover: true });
+      await send('Target.setAutoAttach', { autoAttach: true, flatten: true, waitForDebuggerOnStart: false });
+      const firstSession = (await waitForEvent('Target.attachedToTarget', () => true)).params?.sessionId as string;
+      const firstTree = await send('Page.getFrameTree', {}, firstSession);
+      expect(firstTree.error).toBeUndefined();
+
+      const secondId = await openGuest(`${baseUrl}/second`);
+      expect(
+        (
+          await invokeBridge<{ success: boolean }>(page, 'app.report-browser-webcontents-id', {
+            webContentsId: secondId,
+          })
+        ).success
+      ).toBe(true);
+      await waitForEvent('Target.detachedFromTarget', (event) => event.params?.sessionId === firstSession);
+      const secondSession = (
+        await waitForEvent('Target.attachedToTarget', (event) => event.params?.sessionId !== firstSession)
+      ).params?.sessionId as string;
+      const secondTree = await send('Page.getFrameTree', {}, secondSession);
+      expect(secondTree.error).toBeUndefined();
+      expect(JSON.stringify(secondTree.result)).toContain('/second');
+
+      const frameTree = secondTree.result?.frameTree as { frame: { id: string } } | undefined;
+      if (!frameTree) throw new Error('The second browser tab has no frame tree');
+      const frameId = frameTree.frame.id;
+      const accessibility = await send('Accessibility.getFullAXTree', { frameId }, secondSession);
+      expect(accessibility.error).toBeUndefined();
+      const navigation = await send('Page.navigate', { url: `${baseUrl}/third` }, secondSession);
+      expect(navigation.error).toBeUndefined();
+    } finally {
+      socket?.close();
+      await page
+        .evaluate(() => document.querySelectorAll('webview').forEach((guest) => guest.remove()))
+        .catch(() => {});
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
 });
