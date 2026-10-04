@@ -1,4 +1,17 @@
 import type { AssistantDetail } from '@/common/types/agent/assistantTypes';
+import type { IMcpServer } from '@/common/config/storage';
+import { BLUEPRINT_MCP_NAME } from '@/common/config/constants';
+
+/** Product Bot always takes the Blueprint MCP into each new conversation. */
+export const withProductBlueprintMcp = (
+  assistantId: string | null,
+  selectedIds: string[],
+  availableServers: IMcpServer[]
+): string[] => {
+  if (assistantId !== 'xuzuo-product') return selectedIds;
+  const blueprint = availableServers.find((server) => server.name === BLUEPRINT_MCP_NAME && server.enabled);
+  return blueprint ? [...new Set([...selectedIds, blueprint.id])] : selectedIds;
+};
 
 export type ResolvedGuidAssistantDefaults = {
   modelId?: string;

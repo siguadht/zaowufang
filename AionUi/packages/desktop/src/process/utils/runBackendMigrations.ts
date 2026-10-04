@@ -5,11 +5,13 @@
  */
 
 import { execFile } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { migrateConfigStorage, migrateLegacyMcpConfigToDb, migrateProviders } from '@/common/config/configMigration';
 import { httpRequest } from '@/common/adapter/httpBridge';
 import { mcpService } from '@/common/adapter/ipcBridge';
 import type { ImageGenerationModelSetting } from '@/common/config/clientSettings';
-import { BUILTIN_BROWSER_MCP_NAME } from '@/common/config/constants';
+import { BLUEPRINT_MCP_NAME, BUILTIN_BROWSER_MCP_NAME } from '@/common/config/constants';
 import { APP_DISPLAY_NAME } from '@/common/branding';
 import {
   removeImageGenerationEnvKeys,
@@ -75,6 +77,67 @@ async function fetchProviders(): Promise<IProvider[]> {
     console.warn('[Migration] MCP bootstrap could not load providers for image generation env resolution', error);
     return [];
   }
+}
+
+async function fetchProductModelId(): Promise<string | undefined> {
+  try {
+    const detail = await httpRequest<{ preferences?: { last_model_id?: string } }>(
+      'GET',
+      '/api/assistants/xuzuo-product'
+    );
+    return detail?.preferences?.last_model_id;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Reuse the Product Bot's last model when possible; otherwise use a configured chat model. */
+export function resolveBlueprintProvider(
+  providers: IProvider[],
+  preferredModel?: string
+): { provider: IProvider; model: string } | null {
+  const usable = providers.filter((provider) =>
+    Boolean(provider.api_key && provider.base_url && Array.isArray(provider.models) && provider.models.length)
+  );
+  const preferred = usable.find((provider) => preferredModel && provider.models.includes(preferredModel));
+  const provider = preferred || usable[0];
+  if (!provider) return null;
+  return { provider, model: preferred ? preferredModel! : provider.models[0] };
+}
+
+function resolveBlueprintHome(): string | null {
+  const entryDir = path.dirname(getBuiltinMcpScriptPath('builtin-mcp-blueprint'));
+  const candidates = [
+    path.resolve(entryDir, '../../../agent-blueprint'),
+    path.resolve(entryDir, '../../resources/agent-blueprint'),
+  ];
+  return candidates.find((candidate) => existsSync(path.join(candidate, 'run_plan.py'))) || null;
+}
+
+function buildBuiltinBlueprintServer(selection: ReturnType<typeof resolveBlueprintProvider>): McpImportServer {
+  const home = resolveBlueprintHome();
+  const python = home && path.join(home, 'python', 'bin', 'python3.12');
+  const hasRuntime = Boolean(python && existsSync(python));
+  const scriptPath = getBuiltinMcpScriptPath('builtin-mcp-blueprint');
+  const env =
+    selection && home && hasRuntime
+      ? {
+          AIONUI_BLUEPRINT_HOME: home,
+          AIONUI_BLUEPRINT_PYTHON: python!,
+          AIONUI_BLUEPRINT_BASE_URL: selection.provider.base_url,
+          AIONUI_BLUEPRINT_API_KEY: selection.provider.api_key,
+          AIONUI_BLUEPRINT_MODEL: selection.model,
+        }
+      : {};
+  const serverConfig = { command: 'node', args: [scriptPath], env };
+  return {
+    name: BLUEPRINT_MCP_NAME,
+    description: 'Generate an Agent Blueprint architecture plan from a product idea before writing a PRD.',
+    enabled: Boolean(selection && hasRuntime),
+    builtin: true,
+    transport: { type: 'stdio', ...serverConfig },
+    original_json: JSON.stringify({ mcpServers: { [BLUEPRINT_MCP_NAME]: serverConfig } }, null, 2),
+  };
 }
 
 export function resolveImageGenerationMigrationConfig(
@@ -294,10 +357,11 @@ function buildOriginalJsonFromTransport(server: Pick<IMcpServer, 'name' | 'descr
 }
 
 async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<void> {
-  const [backendPrefs, fileImageConfig, providers] = await Promise.all([
+  const [backendPrefs, fileImageConfig, providers, productModelId] = await Promise.all([
     fetchBackendClientPreferences(),
     configFile.get('tools.imageGenerationModel').catch((): undefined => undefined),
     fetchProviders(),
+    fetchProductModelId(),
   ]);
   const imageConfig = resolveImageGenerationMigrationConfig(backendPrefs, fileImageConfig);
   const imageConfigSource = resolveImageGenerationMigrationConfigSource(backendPrefs, fileImageConfig);
@@ -309,8 +373,11 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
   const imageEnvResolution = resolveImageGenerationMcpEnv(imageConfig, providers, existingImageEnv);
   logImageGenerationEnvResolution(imageEnvResolution, 'bootstrap');
   const imageServer = buildBuiltinImageGenerationServer(imageEnvResolution, imageConfig);
+  const blueprintServer = buildBuiltinBlueprintServer(resolveBlueprintProvider(providers, productModelId));
   const defaultServers = buildDefaultMcpServers();
-  const missing = [...defaultServers, imageServer].filter((server) => !existingByName.has(server.name));
+  const missing = [...defaultServers, imageServer, blueprintServer].filter(
+    (server) => !existingByName.has(server.name)
+  );
   let imageServerUpdated = false;
 
   if (missing.length > 0) {
@@ -434,6 +501,28 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
       browserServerUpdated = true;
     }
   }
+
+  const existingBlueprintServer = existingByName.get(BLUEPRINT_MCP_NAME);
+  if (existingBlueprintServer) {
+    const transportChanged = !isSameStdioTransport(existingBlueprintServer.transport, blueprintServer.transport);
+    if (transportChanged || existingBlueprintServer.original_json !== blueprintServer.original_json) {
+      await mcpService.updateServer.invoke({
+        id: existingBlueprintServer.id,
+        data: {
+          transport: blueprintServer.transport,
+          original_json: blueprintServer.original_json,
+        },
+      });
+    }
+    if (existingBlueprintServer.enabled !== blueprintServer.enabled) {
+      await mcpService.toggleServer.invoke({ id: existingBlueprintServer.id });
+    }
+  }
+  console.info(
+    '[Migration] Agent Blueprint MCP ready: %s, model configured: %s',
+    blueprintServer.enabled ? 'yes' : 'no',
+    productModelId ? 'yes' : 'no'
+  );
 
   console.info(
     '[Migration] MCP bootstrap completed, imported %d missing defaults, updated image server: %s, updated browser server: %s, image config source: %s, image enabled: %s',

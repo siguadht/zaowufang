@@ -11,5 +11,8 @@ out/
 AionUi/resources/bundled-aioncore/
 AionUi/resources/hub/
 *.dmg
+AionUi/resources/agent-blueprint/python/
+AionUi/resources/agent-blueprint/**/__pycache__/
+AionUi/resources/agent-blueprint/**/*.pyc
 *.zip
 *.iconset/

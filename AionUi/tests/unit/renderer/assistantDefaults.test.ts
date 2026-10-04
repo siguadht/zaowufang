@@ -5,7 +5,9 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { resolveGuidAssistantDefaults } from '@/renderer/pages/guid/utils/assistantDefaults';
+import { resolveGuidAssistantDefaults, withProductBlueprintMcp } from '@/renderer/pages/guid/utils/assistantDefaults';
+import { BLUEPRINT_MCP_NAME } from '@/common/config/constants';
+import type { IMcpServer } from '@/common/config/storage';
 import type { AssistantDetail } from '@/common/types/agent/assistantTypes';
 
 const buildDetail = (
@@ -166,5 +168,19 @@ describe('resolveGuidAssistantDefaults', () => {
       disabledBuiltinSkillIds: [],
       mcpIds: [],
     });
+  });
+});
+
+describe('withProductBlueprintMcp', () => {
+  const server = { id: 'blueprint-id', name: BLUEPRINT_MCP_NAME, enabled: true } as IMcpServer;
+
+  it('adds Blueprint to Product Bot conversations once', () => {
+    expect(withProductBlueprintMcp('xuzuo-product', ['other-id'], [server])).toEqual(['other-id', 'blueprint-id']);
+    expect(withProductBlueprintMcp('xuzuo-product', ['blueprint-id'], [server])).toEqual(['blueprint-id']);
+  });
+
+  it('keeps it out of other assistants and unavailable servers', () => {
+    expect(withProductBlueprintMcp('xuzuo-developer', [], [server])).toEqual([]);
+    expect(withProductBlueprintMcp('xuzuo-product', [], [{ ...server, enabled: false }])).toEqual([]);
   });
 });

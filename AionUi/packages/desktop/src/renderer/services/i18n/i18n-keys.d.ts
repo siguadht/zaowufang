@@ -1106,6 +1106,7 @@ export type I18nKey =
   | 'google.mode.autoGemini25Desc'
   | 'google.mode.autoGemini3Desc'
   | 'google.mode.manualDesc'
+  | 'guid.blueprintUnavailable'
   | 'guid.botTeamHint'
   | 'guid.botTeamTitle'
   | 'guid.defaultPrompts.cleanup'

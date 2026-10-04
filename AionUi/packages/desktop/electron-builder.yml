@@ -114,6 +114,12 @@ extraResources:
     to: hub
   - from: resources/third-party-notices
     to: third-party-notices
+  - from: resources/agent-blueprint
+    to: agent-blueprint
+  - from: ../AionCore/crates/aionui-app/assets/builtin-assistants
+    to: zaowufang-builtins/assistants
+  - from: ../AionCore/crates/aionui-app/assets/builtin-skills
+    to: zaowufang-builtins/skills
 win:
   target:
     - nsis
@@ -208,6 +214,7 @@ asarUnpack:
   # Builtin MCP server scripts must be unpacked so external node processes can execute them
   - 'out/main/builtin-mcp-image-gen.js'
   - 'out/main/builtin-mcp-browser.js'
+  - 'out/main/builtin-mcp-blueprint.js'
   - 'out/main/team-mcp-stdio.js'
 
 # Compression level: normal for faster builds, maximum for smallest size

@@ -16,6 +16,8 @@ import { type TFunction } from 'i18next';
 import type { NavigateFunction } from 'react-router-dom';
 import { mutate as swrMutate } from 'swr';
 import { getConversationCreateErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
+import { BLUEPRINT_MCP_NAME } from '@/common/config/constants';
+import { withProductBlueprintMcp } from '../utils/assistantDefaults';
 
 export type GuidSendDeps = {
   // Input state
@@ -111,7 +113,18 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const assistantBackend = selectedAssistantBackend;
     const enabled_skills_to_send = guidEnabledSkills ?? assistantDefaultSkillIds;
     const excludeBuiltinSkills = guidDisabledBuiltinSkills ?? assistantDefaultDisabledBuiltinSkillIds;
-    const selectedAllMcpServerIds = selectedMcpServerIds ?? [];
+    if (
+      selectedAssistantId === 'xuzuo-product' &&
+      !availableMcpServers.some((server) => server.name === BLUEPRINT_MCP_NAME && server.enabled)
+    ) {
+      Message.error(t('guid.blueprintUnavailable'));
+      return;
+    }
+    const selectedAllMcpServerIds = withProductBlueprintMcp(
+      selectedAssistantId,
+      selectedMcpServerIds ?? [],
+      availableMcpServers
+    );
     const selectedMcpServerIdSet = new Set(selectedAllMcpServerIds);
     const selectedUserMcpServerIds = availableMcpServers
       .filter((server) => selectedMcpServerIdSet.has(server.id) && server.builtin !== true)
@@ -122,7 +135,11 @@ export const useGuidSend = (deps: GuidSendDeps): GuidSendResult => {
     const selectedSessionMcpServers = availableMcpServers
       .filter((server) => selectedMcpServerIdSet.has(server.id) && server.builtin === true)
       .map((server) => toSessionMcpServer(server));
-    const defaultSelectedMcpServerIds = assistantDefaultMcpIds;
+    const defaultSelectedMcpServerIds = withProductBlueprintMcp(
+      selectedAssistantId,
+      assistantDefaultMcpIds ?? [],
+      availableMcpServers
+    );
     const defaultSelectedUserMcpServerIds = availableMcpServers
       .filter((server) => (defaultSelectedMcpServerIds ?? []).includes(server.id) && server.builtin !== true)
       .map((server) => server.id);

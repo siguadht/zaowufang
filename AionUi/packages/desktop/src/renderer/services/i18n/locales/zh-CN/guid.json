@@ -47,5 +47,6 @@
   "deliverablesLoadError": "文件读取失败，请检查工作区是否仍可访问",
   "deliverablesFileHint": "点击文件可预览，点击文件夹可继续浏览",
   "deliverablesRefresh": "刷新文件",
-  "taskHubEyebrow": "造物坊 · 工作空间"
+  "taskHubEyebrow": "造物坊 · 工作空间",
+  "blueprintUnavailable": "Agent Blueprint 尚未就绪。请重启造物坊并检查模型设置。"
 }

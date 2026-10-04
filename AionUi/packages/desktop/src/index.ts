@@ -20,6 +20,20 @@ import { app, BrowserWindow, ipcMain, nativeImage, powerMonitor, session } from 
 import fixPath from 'fix-path';
 import * as fs from 'fs';
 import * as path from 'path';
+// The bundled aioncore supports loading built-in assistant/skill assets from disk.
+// Keep Zaowufang's product rules in sync with this desktop release even when the
+// backend binary was built separately.
+if (app.isPackaged) {
+  const builtins = path.join(process.resourcesPath, 'zaowufang-builtins');
+  const assistants = path.join(builtins, 'assistants');
+  const skills = path.join(builtins, 'skills');
+  if (fs.existsSync(path.join(assistants, 'assistants.json'))) {
+    process.env.AIONUI_BUILTIN_ASSISTANTS_PATH = assistants;
+  }
+  if (fs.existsSync(skills)) {
+    process.env.AIONUI_BUILTIN_SKILLS_PATH = skills;
+  }
+}
 import { initMainAdapterWithWindow } from './common/adapter/main';
 import { ipcBridge } from './common';
 import { initializeProcess } from './process';

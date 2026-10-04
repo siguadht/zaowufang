@@ -92,3 +92,14 @@
 - 用真实 `chrome-devtools-mcp` 和两个内置 webview 复现：单个稳定页签的页面读取、脚本和跳转均正常；从页签 A 切到 B 后，旧版桥接继续复用同一个 CDP session 和 target，MCP 沿用 A 的主 frame，准确复现 `Frame with the given frameId is not found` 与 `No frame with given id found`。
 - 修复策略：切换 webview 时明确结束旧 CDP session，并用递增的 session ID 宣告新页签；前端仅将当前可见的浏览器页签报给桥接层，避免隐藏页签或其他 webview 抢占控制目标。
 - 验证范围：打包应用的端到端测试覆盖两个 webview 的切换与 frame、DOM、无障碍树、跳转；真实 MCP 在切换后重新列出页签，可在新页签读取结构、执行脚本和跳转。此前已开启的会话可能仍持有旧 MCP 页面对象，更新应用后建议新建会话重新选择页签。
+
+## 2026-10-04：产品 Bot 自动使用 Agent Blueprint
+
+- 用户明确选择：产品 Bot **每次新写或修改 PRD，自动调用** Agent Blueprint；Blueprint 使用造物坊已配置的模型，不另设 API。该决定取代此前仅评估可选规划服务的做法。
+- Blueprint 原包是独立 Python 引擎，输出 Agent 架构方案，不是 PRD。只接入需求拆解、规则选型、方案生成和审稿管线，不复制其 `s01`–`s17` Agent 组件，不把方案冒充 PRD。
+- 造物坊以独立 MCP 工具 `agent_blueprint_plan` 调用引擎，新产品 Bot 会话自动带上工具；PRD 规则要求生成前调用，输出方案保存于会话工作区。工具失败必须向用户说明。
+- 模型适配层复用造物坊现有 OpenAI 兼容模型配置。macOS 安装包包含 Python 3.12 运行环境；源码不提交运行时二进制，打包前必须准备该资产。
+- 上述自动调用由 Bot 的系统规则和工具可用性驱动；若需要不依赖模型遵循指令的严格流程，应另做后端强制编排与调用记录。
+- 实际安装版会话已确认自动携带 Blueprint MCP，且产品 Bot 发出了 `agent_blueprint_plan` 调用。首次 Qwen3.8 默认深度推理在架构设计阶段超过 120 秒而失败；适配层改用该模型官方支持的非思考 JSON 输出，完整五步管线（含审稿后重写）已用现有模型配置跑通。对其他模型保留原有请求参数。
+- MCP 允许传入当前会话工作区绝对路径 `workspace_dir`，将方案存进任务文件；路径未知时仍可运行，默认保存在应用数据目录并返回实际文件路径。
+- 简短想法的实测方案两次审稿后仍为 `review_ok=false`，主要因为输入缺少用户、边界等关键信息。工具返回该状态，产品 Bot 必须将方案标为待完善草稿，不能说“审稿通过”。

@@ -65,5 +65,6 @@
   "deliverablesLoadError": "Could not read files. Check whether this workspace is still available.",
   "deliverablesFileHint": "Click a file to preview it or a folder to browse",
   "deliverablesRefresh": "Refresh files",
-  "taskHubEyebrow": "ZAOWUFANG / WORKSPACE"
+  "taskHubEyebrow": "ZAOWUFANG / WORKSPACE",
+  "blueprintUnavailable": "Agent Blueprint is unavailable. Restart Zaowufang and check the model settings."
 }

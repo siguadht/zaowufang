@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { IMAGE_GEN_ENV_KEYS } from '@/common/config/imageGenerationMcpEnv';
 import { BUILTIN_IMAGE_GEN_NAME, type IMcpServer, type IProvider } from '@/common/config/storage';
-import { resolveImageGenerationMigrationConfig, runBackendMigrations } from '@/process/utils/runBackendMigrations';
+import {
+  resolveBlueprintProvider,
+  resolveImageGenerationMigrationConfig,
+  runBackendMigrations,
+} from '@/process/utils/runBackendMigrations';
 
 const {
   batchImportServersMock,
@@ -144,6 +148,24 @@ describe('resolveImageGenerationMigrationConfig', () => {
     expect(resolveImageGenerationMigrationConfig({ 'tools.imageGenerationModel': backendConfig }, undefined)).toEqual(
       backendConfig
     );
+  });
+});
+
+describe('resolveBlueprintProvider', () => {
+  it('uses the Product Bot preferred model when configured', () => {
+    const second = { ...provider, id: 'provider-2', models: ['product-model'] };
+    expect(resolveBlueprintProvider([provider, second], 'product-model')).toEqual({
+      provider: second,
+      model: 'product-model',
+    });
+  });
+
+  it('falls back to a usable configured model', () => {
+    expect(resolveBlueprintProvider([{ ...provider, api_key: '' }, provider])).toEqual({
+      provider,
+      model: 'gemini-image',
+    });
+    expect(resolveBlueprintProvider([])).toBeNull();
   });
 });
 

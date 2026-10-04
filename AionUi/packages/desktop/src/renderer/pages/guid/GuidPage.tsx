@@ -8,6 +8,7 @@ import { ipcBridge } from '@/common';
 import { buildGuidSlashCommands } from '@/common/chat/slash/guidSlashCommands';
 import type { SlashCommandItem } from '@/common/chat/slash/types';
 import type { IMcpServer, TProviderWithModel } from '@/common/config/storage';
+import { BLUEPRINT_MCP_NAME } from '@/common/config/constants';
 import { resolveLocaleKey } from '@/common/utils';
 import type { AssistantDetail } from '@/common/types/agent/assistantTypes';
 import { APP_DISPLAY_NAME } from '@/common/branding';
@@ -20,6 +21,7 @@ import AssistantSelectionArea from './components/AssistantSelectionArea';
 import ThemedLogo from '@/renderer/components/agent/ThemedLogo';
 import { resolveAssistantAvatar } from '@/renderer/utils/model/assistantAvatar';
 import GuidActionRow from './components/GuidActionRow';
+import { resolveGuidAssistantDefaults, withProductBlueprintMcp } from './utils/assistantDefaults';
 import GuidInputCard from './components/GuidInputCard';
 import GuidModelSelector from './components/GuidModelSelector';
 import { useGuidAssistantSelection } from './hooks/useGuidAssistantSelection';
@@ -28,7 +30,6 @@ import { useGuidModelSelection } from './hooks/useGuidModelSelection';
 import { useGuidSend } from './hooks/useGuidSend';
 import { useTypewriterPlaceholder } from './hooks/useTypewriterPlaceholder';
 import { ensureBackendMcpCatalog } from '@/renderer/hooks/mcp/catalog';
-import { resolveGuidAssistantDefaults } from './utils/assistantDefaults';
 import SpeechInputButton from '@/renderer/components/chat/SpeechInputButton';
 import { chatFileRefPath, uploadFileRef } from '@/common/types/chatFile';
 import { useOpenFileSelector } from '@/renderer/hooks/file/useOpenFileSelector';
@@ -113,13 +114,6 @@ const GuidPage: React.FC = () => {
     }
   }, []);
 
-  const handleToggleMcpServer = useCallback((serverId: string) => {
-    setGuidSelectedMcpServerIds((prev) => {
-      const current = prev ?? [];
-      return current.includes(serverId) ? current.filter((id) => id !== serverId) : [...current, serverId];
-    });
-  }, []);
-
   // --- Hooks ---
   // Only aionrs uses this provider-based model picker now (Gemini runs as a
   // regular ACP backend with its own model selector).
@@ -151,6 +145,20 @@ const GuidPage: React.FC = () => {
   const resetMentionActiveIndex = useCallback<React.Dispatch<React.SetStateAction<number>>>(() => {}, []);
 
   const selectedAssistantId = agentSelection.selectedAssistantId;
+  const handleToggleMcpServer = useCallback(
+    (serverId: string) => {
+      if (
+        selectedAssistantId === 'xuzuo-product' &&
+        availableMcpServers.some((server) => server.id === serverId && server.name === BLUEPRINT_MCP_NAME)
+      )
+        return;
+      setGuidSelectedMcpServerIds((prev) => {
+        const current = prev ?? [];
+        return current.includes(serverId) ? current.filter((id) => id !== serverId) : [...current, serverId];
+      });
+    },
+    [selectedAssistantId, availableMcpServers]
+  );
   const xuzuoBots = useMemo(() => {
     const order = ['xuzuo-product', 'xuzuo-developer', 'xuzuo-qa', 'xuzuo-office'];
     return order
@@ -451,7 +459,9 @@ const GuidPage: React.FC = () => {
           agentSelection.setSelectedThoughtLevelValue(fallbackThoughtLevel, { persistPreference: false });
         }
       }
-      setGuidSelectedMcpServerIds(resolvedDefaults.mcpIds);
+      setGuidSelectedMcpServerIds(
+        withProductBlueprintMcp(agentSelection.selectedAssistantId, resolvedDefaults.mcpIds, availableMcpServers)
+      );
     };
 
     void applyAssistantDefaults().catch((error) => {
@@ -462,6 +472,7 @@ const GuidPage: React.FC = () => {
     agentSelection.currentAgentModeOptions,
     agentSelection.currentThoughtLevelOption,
     agentSelection.selectedAssistantBackend,
+    availableMcpServers,
     agentSelection.setSelectedAcpModel,
     agentSelection.setSelectedMode,
     agentSelection.setSelectedThoughtLevelValue,
@@ -633,7 +644,11 @@ const GuidPage: React.FC = () => {
       enabledSkills={guidEnabledSkills ?? []}
       onToggleSkill={handleToggleSkill}
       mcpServers={availableMcpServers}
-      selectedMcpServerIds={guidSelectedMcpServerIds ?? []}
+      selectedMcpServerIds={withProductBlueprintMcp(
+        agentSelection.selectedAssistantId,
+        guidSelectedMcpServerIds ?? [],
+        availableMcpServers
+      )}
       onToggleMcpServer={handleToggleMcpServer}
       speechInputNode={
         <SpeechInputButton onLiveTranscript={handleLiveTranscript} onTranscript={handleSpeechTranscript} />
